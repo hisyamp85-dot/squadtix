@@ -303,8 +303,9 @@ export default class CheckinsController {
                   event_category_id: barcode.event_category_id,
                 }
               : null,
-            eventName: event?.eventName ?? null,
-            categoryName: event?.categoryName ?? null,
+            eventName: (event as Event | null)?.eventName ?? null,
+            categoryName: (event as Event | null)?.categoryName ?? null,
+
           }
         })
         .filter((row): row is NonNullable<typeof row> => row !== null)
@@ -385,8 +386,9 @@ export default class CheckinsController {
                   event_category_id: barcode.event_category_id,
                 }
               : null,
-            eventName: event?.eventName ?? null,
-            categoryName: event?.categoryName ?? null,
+            eventName: (event as Event | null)?.eventName ?? null,
+            categoryName: (event as Event | null)?.categoryName ?? null,
+
           }
         })
         .filter((row): row is NonNullable<typeof row> => row !== null)

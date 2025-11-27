@@ -39,8 +39,7 @@ export default class CheckinLog extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public updated_at: DateTime
 
-  @column.dateTime()
-  public checkoutAt: DateTime | null
+ß
 
   @column()
   public checkoutBy: string | null

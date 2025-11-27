@@ -1,16 +1,21 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": [
-      "ES2022"
-    ],
+    "lib": ["ES2022"],
     "module": "CommonJS",
     "moduleResolution": "node",
     "rootDir": "./",
     "outDir": "build",
+
     "esModuleInterop": true,
     "sourceMap": true,
     "skipLibCheck": true,
+
+    /* WAJIB UNTUK DECORATORS */
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strictPropertyInitialization": false,
+
     "types": [
       "@adonisjs/core",
       "@adonisjs/repl",
@@ -18,19 +23,12 @@
       "node",
       "@adonisjs/lucid"
     ],
+
     "paths": {
-      "App/*": [
-        "./app/*"
-      ],
-      "Config/*": [
-        "./config/*"
-      ],
-      "Contracts/*": [
-        "./contracts/*"
-      ],
-      "Database/*": [
-        "./database/*"
-      ]
+      "App/*": ["./app/*"],
+      "Config/*": ["./config/*"],
+      "Contracts/*": ["./contracts/*"],
+      "Database/*": ["./database/*"]
     }
   }
 }
