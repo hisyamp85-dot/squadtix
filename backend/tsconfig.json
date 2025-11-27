@@ -1,17 +1,23 @@
 {
-  "extends": "adonis-preset-ts/tsconfig.json",
-  "include": [
-    "**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "build"
-  ],
   "compilerOptions": {
-    "outDir": "build",
+    "target": "ES2022",
+    "lib": [
+      "ES2022"
+    ],
+    "module": "CommonJS",
+    "moduleResolution": "node",
     "rootDir": "./",
-    "baseUrl": "./",
+    "outDir": "build",
+    "esModuleInterop": true,
     "sourceMap": true,
+    "skipLibCheck": true,
+    "types": [
+      "@adonisjs/core",
+      "@adonisjs/repl",
+      "@japa/preset-adonis/build/adonis-typings",
+      "node",
+      "@adonisjs/lucid"
+    ],
     "paths": {
       "App/*": [
         "./app/*"
@@ -25,11 +31,6 @@
       "Database/*": [
         "./database/*"
       ]
-    },
-    "types": [
-      "@adonisjs/core",
-      "@adonisjs/repl",
-      "@japa/preset-adonis/build/adonis-typings"
-    ]
+    }
   }
 }

@@ -1,13 +1,12 @@
-<script setup lang="ts">
-const testApi = async () => {
-  const res = await fetch('/api/hello');
-  const data = await res.json();
-  console.log(data);
-};
-
-testApi();
-</script>
-
 <template>
-  <h1>Squadtix Frontend Connected!</h1>
+  <ThemeProvider>
+    <SidebarProvider>
+      <RouterView />
+    </SidebarProvider>
+  </ThemeProvider>
 </template>
+
+<script setup lang="ts">
+import ThemeProvider from './components/layout/ThemeProvider.vue'
+import SidebarProvider from './components/layout/SidebarProvider.vue'
+</script>
