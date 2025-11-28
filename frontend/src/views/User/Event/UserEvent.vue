@@ -271,7 +271,6 @@ const breadcrumbs = computed(() => {
 // ======================== TIPE & STATE EVENT ========================
 
 interface EventForm {
-  [key: number]: unknown;
   id_event?: string
   name?: string
   categories: string[]
@@ -376,7 +375,7 @@ const viewEventDetail = (event: EventForm) => {
       id: userId.value,
       eventId: event.id_event,
     },
-    state: { event },
+    state: { event: event as any },
   })
 }
 
@@ -385,7 +384,7 @@ function isAxiosError(error: unknown): error is { response?: { data?: unknown };
   return typeof error === 'object' && error !== null && 'message' in error
 }
 
-const handleAddEvent = async (eventData: EventForm) => {
+const handleAddEvent = async (formData: EventForm) => {
   try {
     if (!userId.value) {
       toast.error('User not found. Please login again.')
@@ -394,9 +393,9 @@ const handleAddEvent = async (eventData: EventForm) => {
     }
 
     const payload = {
-      name: eventData.name,
-      categories: eventData.categories,
-      status: eventData.status || 'Active',
+      name: formData.name,
+      categories: formData.categories,
+      status: formData.status || 'Active',
       id_user: userId.value, // PASTIKAN event milik user ini
     }
 

@@ -589,7 +589,7 @@ async function confirmDelete() {
       data: { ids },
     })
 
-    toast.success((response.data as { message: string }).message)
+    toast.success('Upload successful!')
     selectedBarcodes.value = []
     showDeleteModal.value = false
     await fetchBarcodes()

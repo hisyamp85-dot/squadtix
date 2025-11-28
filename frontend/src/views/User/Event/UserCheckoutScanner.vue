@@ -152,7 +152,7 @@
               >
                 Start Scanning
               </Button>
-              <Button variant="secondary" @click="stopScanning" :disabled="!isScanning">
+              <Button variant="outline" @click="stopScanning" :disabled="!isScanning">
                 Stop
               </Button>
             </div>
@@ -236,7 +236,7 @@
               <h4 class="text-md font-semibold text-gray-900 dark:text-white">
                 Currently Checked-in
               </h4>
-              <Button size="xs" variant="outline" @click="loadCheckedInList" :disabled="isLoadingList">
+              <Button size="sm" variant="outline" @click="loadCheckedInList" :disabled="isLoadingList">
                 {{ isLoadingList ? 'Refreshing...' : 'Refresh' }}
               </Button>
             </div>

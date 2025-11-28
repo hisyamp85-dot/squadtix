@@ -309,7 +309,9 @@ const goToPage = (page: number) => {
   currentPage.value = page;
 };
 
-const handleAddEvent = async (eventData: EventForm) => {
+const handleAddEvent = async (formData: any) => {
+  const eventData = formData as EventForm; // kalau mau tetap pakai EventForm di dalam
+
   try {
     const payload = {
       name: eventData.name,

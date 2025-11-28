@@ -502,8 +502,8 @@ const fetchLogs = async () => {
 
     if (Array.isArray(response.data)) {
       rawLogs = response.data as CheckinLog[]
-    } else if (response.data && Array.isArray(response.data.logs)) {
-      rawLogs = response.data.logs as CheckinLog[]
+    } else if (response.data && Array.isArray((response.data as any).logs)) {
+      rawLogs = (response.data as any).logs as CheckinLog[]
     }
 
     logs.value = rawLogs

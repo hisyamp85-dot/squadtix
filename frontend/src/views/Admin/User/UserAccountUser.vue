@@ -15,7 +15,7 @@ interface User {
   password: string
   role: string
   project?: string
-  status?: string
+  status?: 'Active' | 'Inactive' | ''
 }
 
 const currentPageTitle = ref('User Account - User')
@@ -85,7 +85,7 @@ const viewUser = (user: User) => {
 
     <DetailUserAccount
       :show="showDetail"
-      :user="selectedUser"
+      :user="selectedUser as any"
       @close="showDetail = false"
     />
   </admin-layout>

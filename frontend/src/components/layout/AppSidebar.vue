@@ -367,7 +367,7 @@ const homePath = computed(() => {
 
 const adminMenuGroups: { title: string; items: MenuItem[] }[] = [
   {
-    // title: "Main",
+    title: "Main",
     items: [
       {
         icon: LayoutDashboard,
