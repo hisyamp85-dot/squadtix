@@ -33,7 +33,6 @@ backend/tmp/
 backend/database/*.db
 backend/node_modules/
 backend/dist/
-backend/.adonisrc.json
 backend/ace-manifest.json
 backend/npm-debug.log*
 backend/pnpm-debug.log*

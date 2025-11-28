@@ -1,0 +1,24 @@
+{
+  "typescript": true,
+  "directories": {
+    "app": "app",
+    "config": "config",
+    "contracts": "contracts",
+    "providers": "providers",
+    "database": "database",
+    "public": "public",
+    "resources": "resources",
+    "start": "start",
+    "tests": "tests"
+  },
+  "metaFiles": [
+    {
+      "pattern": "public/**",
+      "reloadServer": false
+    },
+    {
+      "pattern": "resources/**",
+      "reloadServer": false
+    }
+  ]
+}
