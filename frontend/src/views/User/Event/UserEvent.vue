@@ -18,7 +18,7 @@
         <ProfileCard />
 
         <!-- TOP BAR: ADD BUTTON + SHOW ENTRIES -->
-        <div
+	 <div
           class="flex flex-wrap items-center justify-between mb-4 pt-4 pr-4 pl-4 gap-3"
         >
           <div class="flex items-center gap-2">
@@ -31,8 +31,8 @@
             >
               Add New Event
             </Button>
-          </div>
-
+          </div>	
+     
           <div class="flex items-center gap-2">
             <label for="entries" class="text-gray-700 dark:text-gray-300">Show</label>
             <select
