@@ -3,7 +3,6 @@ import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
 import Hash from '@ioc:Adonis/Core/Hash'
 
 export default class MemberUser extends BaseModel {
-  public static query: any // Add this to suppress TS error for query method
   public static table = 'member_users'
 
   @column({ isPrimary: true, columnName: 'member_user_id' })

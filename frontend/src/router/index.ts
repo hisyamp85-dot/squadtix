@@ -15,6 +15,7 @@ const router = createRouter({
       component: () => import('../views/Admin/Dashboard/DashboardAdmin.vue'),
       meta: {
         title: 'Dashboard',
+        // tidak pakai layout: 'user' -> artinya ini area admin
       },
     },
     {
@@ -247,12 +248,12 @@ const router = createRouter({
 
     // =========================
     //         USER AREA
-    //   (layout: 'user')
+    //    Prefix: /user/:id
     // =========================
 
     // Dashboard user
     {
-      path: '/:id',
+      path: '/user/:id',
       name: 'UserDashboard',
       component: () => import('../views/User/DashboardUser.vue'),
       meta: {
@@ -261,7 +262,7 @@ const router = createRouter({
       },
     },
     {
-      path: '/:id/analytics',
+      path: '/user/:id/analytics',
       name: 'UserDashboardAnalytics',
       component: () => import('../views/User/DashboardUser.vue'),
       meta: {
@@ -272,7 +273,7 @@ const router = createRouter({
 
     // Account / Profile (user)
     {
-      path: '/:id/profile',
+      path: '/user/:id/profile',
       name: 'UserProfile',
       component: () => import('../views/User/Account/UserProfileUser.vue'),
       meta: {
@@ -281,7 +282,16 @@ const router = createRouter({
       },
     },
     {
-      path: '/:id/memberuser',
+      path: '/user/:id/profile/edit',
+      name: 'UserEditProfile',
+      component: () => import('../views/User/Account/UserEditProfile.vue'),
+      meta: {
+        title: 'Edit Profile',
+        layout: 'user',
+      },
+    },
+    {
+      path: '/user/:id/memberuser',
       name: 'MemberUser',
       component: () => import('../views/User/Account/UploadMemberUser.vue'),
       meta: {
@@ -292,7 +302,7 @@ const router = createRouter({
 
     // Redeem (user)
     {
-      path: '/:id/redeem/tickets',
+      path: '/user/:id/redeem/tickets',
       name: 'UserRedeemTickets',
       component: () => import('../views/User/RedeemUser.vue'),
       meta: {
@@ -301,7 +311,7 @@ const router = createRouter({
       },
     },
     {
-      path: '/:id/redeem/rewards',
+      path: '/user/:id/redeem/rewards',
       name: 'UserRedeemRewards',
       component: () => import('../views/User/RedeemUser.vue'),
       meta: {
@@ -310,13 +320,9 @@ const router = createRouter({
       },
     },
 
-    // =========================
-    //   EVENT MENU VERSI USER
-    //   (MIRROR DARI ADMIN)
-    // =========================
-
+    // Event (user mirror)
     {
-      path: '/:id/event',
+      path: '/user/:id/event',
       name: 'UserEvent',
       component: () => import('../views/User/Event/UserEvent.vue'),
       meta: {
@@ -325,7 +331,7 @@ const router = createRouter({
       },
     },
     {
-      path: '/:id/event/detail/:eventId',
+      path: '/user/:id/event/detail/:eventId',
       name: 'UserDetailEvent',
       component: () => import('../views/User/Event/UserDetailEvent.vue'),
       meta: {
@@ -334,7 +340,7 @@ const router = createRouter({
       },
     },
     {
-      path: '/:id/event/upload-barcode',
+      path: '/user/:id/event/upload-barcode',
       name: 'UserUploadBarcode',
       component: () => import('../views/User/Event/UserUploadBarcode.vue'),
       meta: {
@@ -343,7 +349,7 @@ const router = createRouter({
       },
     },
     {
-      path: '/:id/event/upload-data-barcode',
+      path: '/user/:id/event/upload-data-barcode',
       name: 'UserUploadDataBarcode',
       component: () => import('../views/User/Event/UserUploadDataBarcode.vue'),
       meta: {
@@ -352,7 +358,7 @@ const router = createRouter({
       },
     },
     {
-      path: '/:id/event/redeem',
+      path: '/user/:id/event/redeem',
       name: 'UserRedeemEvent',
       component: () => import('../views/User/Event/UserRedeemTicket.vue'),
       meta: {
@@ -361,7 +367,7 @@ const router = createRouter({
       },
     },
     {
-      path: '/:id/checkin',
+      path: '/user/:id/checkin',
       name: 'UserCheckinScanner',
       component: () => import('../views/User/Event/UserCheckinScanner.vue'),
       meta: {
@@ -370,7 +376,7 @@ const router = createRouter({
       },
     },
     {
-      path: '/:id/checkout',
+      path: '/user/:id/checkout',
       name: 'UserCheckoutScanner',
       component: () => import('../views/User/Event/UserCheckoutScanner.vue'),
       meta: {
@@ -379,7 +385,7 @@ const router = createRouter({
       },
     },
     {
-      path: '/:id/checkin/logs',
+      path: '/user/:id/checkin/logs',
       name: 'UserCheckinLogs',
       component: () => import('../views/User/Event/UserCheckinLogs.vue'),
       meta: {
@@ -387,8 +393,8 @@ const router = createRouter({
         layout: 'user',
       },
     },
-     {
-      path: '/:id/report',
+    {
+      path: '/user/:id/report',
       name: 'UserReportEvent',
       component: () => import('../views/User/Event/UserReportEvent.vue'),
       meta: {
@@ -397,7 +403,7 @@ const router = createRouter({
       },
     },
     {
-      path: '/:id/event/group-event',
+      path: '/user/:id/event/group-event',
       name: 'UserGroupEvent',
       component: () => import('../views/User/Event/UserGroupEvent.vue'),
       meta: {
@@ -406,29 +412,12 @@ const router = createRouter({
       },
     },
     {
-      path: '/:id/event/add-category-group-event',
+      path: '/user/:id/event/add-category-group-event',
       name: 'UserAddCategoryGroupEvent',
       component: () =>
         import('../views/User/Event/UserAddNewCategoryGroupEvent.vue'),
       meta: {
         title: 'Add Category Group Event',
-        layout: 'user',
-      },
-    },
-        {
-      path: '/:id/report',
-      name: 'UserReportEvent',
-      component: () => import('../views/User/Event/UserReportEvent.vue'),
-      meta: {
-        title: 'Report',
-      },
-    },
-    {
-      path: '/:id/profile/edit',
-      name: 'UserEditProfile',
-      component: () => import('../views/User/Account/UserEditProfile.vue'),
-      meta: {
-        title: 'Edit Profile',
         layout: 'user',
       },
     },
@@ -440,49 +429,59 @@ const router = createRouter({
 // =========================
 
 router.beforeEach((to, from, next) => {
-  const user = localStorage.getItem('user')
-  const userData = user ? JSON.parse(user) : null
+  const storedUser = localStorage.getItem('user')
+  const userData = storedUser ? JSON.parse(storedUser) : null
 
-  if (!user && to.path !== '/login') {
-    // Belum login → lempar ke login
+  // helper normalisasi role -> 'admin' / 'user'
+  const normalizedRole = (() => {
+    if (!userData || userData.role == null) return null
+    const r = String(userData.role).toLowerCase().trim()
+    if (['admin', 'administrator', 'superadmin'].includes(r)) return 'admin'
+    return 'user'
+  })()
+
+  // Belum login → apapun selain /login diarahkan ke /login
+  if (!userData && to.path !== '/login') {
     return next('/login')
   }
 
-  if (user && to.path === '/login') {
-    // Sudah login tapi ke /login lagi
-    if (userData.role === 'Admin') {
+  // Sudah login tapi masih ke /login → arahkan ke dashboard sesuai role
+  if (userData && to.path === '/login') {
+    if (normalizedRole === 'admin') {
       return next('/')
     } else {
-      return next(`/${userData.id}`)
+      return next(`/user/${userData.id}`)
     }
   }
 
-  // 🔒 Kunci semua route layout 'user' ke id user yang lagi login
+  // Route layout 'user' → hanya boleh diakses role 'user' dan id di URL harus sama dengan id login
   if (userData && to.meta.layout === 'user') {
-    const routeId = to.params.id
+    const routeId = String(to.params.id || '')
     const loggedInId = String(userData.id)
 
-    if (routeId && String(routeId) !== loggedInId) {
-      // Kalau id di URL beda dengan id user → paksa pakai id sendiri
-      return next({
-        name: to.name,
-        params: {
-          ...to.params,
-          id: loggedInId,
-        },
-        query: to.query,
-      })
+    // kalau bukan role user tapi coba akses layout user → lempar ke admin dashboard
+    if (normalizedRole !== 'user') {
+      return next('/')
     }
 
-    // Kalau bukan role User tapi coba akses layout 'user' → lempar ke admin dashboard
-    if (userData.role !== 'User') {
-      return next('/')
+    // kalau id di URL beda dengan id user → paksa pakai id sendiri
+    if (routeId && routeId !== loggedInId) {
+      return next({
+        name: to.name,
+        params: { ...to.params, id: loggedInId },
+        query: to.query,
+      })
     }
   }
 
   // User biasa mencoba akses halaman admin (meta.layout !== 'user')
-  if (userData && to.meta.layout !== 'user' && userData.role === 'User') {
-    return next(`/${userData.id}`)
+  if (
+    userData &&
+    normalizedRole === 'user' &&
+    to.meta.layout !== 'user' &&
+    to.path !== '/login'
+  ) {
+    return next(`/user/${userData.id}`)
   }
 
   document.title = `${to.meta.title || 'SquadTix'} — SquadTix`

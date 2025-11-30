@@ -3,7 +3,6 @@ import { BaseModel, belongsTo, BelongsTo, column } from '@ioc:Adonis/Lucid/Orm'
 import CategoryQrcode from 'App/Models/CategoryQrcode'
 
 export default class CheckinLog extends BaseModel {
-  public static query: any // Add this to suppress TS error for query method
   public static table = 'checkin_logs'
 
   @column({ isPrimary: true })

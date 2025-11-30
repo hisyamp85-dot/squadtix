@@ -9,8 +9,10 @@
       'transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]',
       'z-[9999]',
       {
+        // Lebar sidebar di layar besar
         'lg:w-[280px]': isExpanded || isMobileOpen || isHovered,
         'lg:w-[84px]': !isExpanded && !isHovered,
+        // Mobile: slide in / out
         'translate-x-0 w-[280px]': isMobileOpen,
         '-translate-x-full': !isMobileOpen,
         'lg:translate-x-0': true,
@@ -210,7 +212,7 @@
           </div>
         </nav>
 
-        <!-- Widget (kalau masih dipakai) -->
+        <!-- Widget tambahan -->
         <SidebarWidget
           v-if="isExpanded || isHovered || isMobileOpen"
           class="mt-auto mb-1"
@@ -218,7 +220,7 @@
       </div>
     </div>
 
-    <!-- BAGIAN PALING BAWAH: USER MANAGEMENT FOOTER -->
+    <!-- BAGIAN PALING BAWAH: USER MANAGEMENT FOOTER (KHUSUS ADMIN) -->
     <div
       v-if="isAdmin"
       class="border-t border-slate-200/70 dark:border-slate-700/70 px-3 lg:px-4 py-3"
@@ -290,8 +292,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { useRoute } from "vue-router";
+import { computed, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import {
   LayoutDashboard,
   CalendarDays,
@@ -300,66 +302,75 @@ import {
   Users2,
   ChevronDown,
   MoreHorizontal,
-} from "lucide-vue-next";
-import SidebarWidget from "./SidebarWidget.vue";
-import { useSidebar } from "@/composables/useSidebar";
+} from 'lucide-vue-next'
+import SidebarWidget from './SidebarWidget.vue'
+import { useSidebar } from '@/composables/useSidebar'
 
-const route = useRoute();
-const { isExpanded, isMobileOpen, isHovered, openSubmenu } = useSidebar();
+const route = useRoute()
+const { isExpanded, isMobileOpen, isHovered, openSubmenu } = useSidebar()
 
 // ======================
 //   USER & ROLE INFO
 // ======================
 
-type Role = "Admin" | "User" | string;
+type NormalizedRole = 'admin' | 'user'
 
 interface RawUser {
-  id: number | string;
-  name: string;
-  username: string;
-  email: string;
-  role: Role;
-  status: string;
+  id: number | string
+  name?: string
+  username?: string
+  email?: string
+  role?: any
+  status?: string
 }
 
 interface MenuItem {
-  name: string;
-  path?: string;
-  pro?: boolean;
-  new?: boolean;
-  icon?: unknown;
-  subItems?: MenuItem[];
+  name: string
+  path?: string
+  pro?: boolean
+  new?: boolean
+  icon?: unknown
+  subItems?: MenuItem[]
 }
 
+// Ambil user dari localStorage, aman di semua device (cek typeof window)
 const storedUser = computed<RawUser | null>(() => {
-  if (typeof window === "undefined") return null;
-  const raw = localStorage.getItem("user");
-  if (!raw) return null;
+  if (typeof window === 'undefined') return null
+  const raw = localStorage.getItem('user')
+  if (!raw) return null
   try {
-    return JSON.parse(raw) as RawUser;
+    return JSON.parse(raw) as RawUser
   } catch {
-    return null;
+    return null
   }
-});
+})
 
-const userRole = computed<Role>(() => storedUser.value?.role || "Admin");
-const userId = computed(() => storedUser.value?.id ?? null);
+// Normalisasi role → 'admin' atau 'user'
+// Sama logika seperti di router guard
+const normalizedRole = computed<NormalizedRole | null>(() => {
+  const raw = storedUser.value?.role
+  if (raw == null) return null
+  const r = String(raw).toLowerCase().trim()
+  if (['admin', 'administrator', 'superadmin'].includes(r)) return 'admin'
+  return 'user'
+})
 
-const isAdmin = computed(() => userRole.value === "Admin");
-const isUser = computed(() => userRole.value === "User");
+const isAdmin = computed(() => normalizedRole.value === 'admin')
+const isUser = computed(() => normalizedRole.value === 'user')
+const userId = computed(() => storedUser.value?.id ?? null)
 
-// base path utk user, misal "/5"
+// base path utk user, misal "/user/44"
 const userBase = computed(() => {
-  if (!isUser.value || !userId.value) return "";
-  return `/${userId.value}`;
-});
+  if (!isUser.value || !userId.value) return ''
+  return `/user/${userId.value}`
+})
 
 // home path utk brand SquadTix
 const homePath = computed(() => {
-  if (isAdmin.value) return "/";
-  if (isUser.value && userBase.value) return userBase.value;
-  return "/";
-});
+  if (isAdmin.value) return '/'
+  if (isUser.value && userBase.value) return userBase.value
+  return '/'
+})
 
 // ======================
 //     MENU DEFINITIONS
@@ -367,86 +378,86 @@ const homePath = computed(() => {
 
 const adminMenuGroups: { title: string; items: MenuItem[] }[] = [
   {
-    title: "Main",
+    title: 'Main',
     items: [
       {
         icon: LayoutDashboard,
-        name: "Dashboard",
-        path: "/",
+        name: 'Dashboard',
+        path: '/',
         pro: false,
       },
     ],
   },
   {
-    title: "Event Management",
+    title: 'Event Management',
     items: [
       {
-        name: "Events",
+        name: 'Events',
         icon: CalendarDays,
-        subItems: [{ name: "All Events", path: "/event", pro: false }],
+        subItems: [{ name: 'All Events', path: '/event', pro: false }],
       },
     ],
   },
   {
-    title: "Gate & Attendance",
+    title: 'Gate & Attendance',
     items: [
       {
-        name: "Scan & Gate",
+        name: 'Scan & Gate',
         icon: ScanLine,
         subItems: [
-          { name: "Check-in", path: "/checkin", pro: false },
-          { name: "Check-out", path: "/checkout", pro: false },
+          { name: 'Check-in', path: '/checkin', pro: false },
+          { name: 'Check-out', path: '/checkout', pro: false },
         ],
       },
     ],
   },
   {
-    title: "Reports",
+    title: 'Reports',
     items: [
       {
-        name: "Attendance Logs",
+        name: 'Attendance Logs',
         icon: FileBarChart2,
         subItems: [
           {
-            name: "Report",
-            path: "/report",
+            name: 'Report',
+            path: '/report',
             pro: false,
           },
           {
-            name: "Check-in & Check-out Logs",
-            path: "/checkin/logs",
+            name: 'Check-in & Check-out Logs',
+            path: '/checkin/logs',
             pro: false,
           },
         ],
       },
     ],
   },
-];
+]
 
 const userMenuGroups = computed<{ title: string; items: MenuItem[] }[]>(() => {
-  if (!userBase.value) return [];
+  if (!userBase.value) return []
 
   return [
     {
-      title: "Main",
+      title: 'Main',
       items: [
         {
           icon: LayoutDashboard,
-          name: "Dashboard",
+          name: 'Dashboard',
           path: `${userBase.value}`,
           pro: false,
         },
       ],
     },
     {
-      title: "Event Management",
+      title: 'Event Management',
       items: [
         {
-          name: "Events",
+          name: 'Events',
           icon: CalendarDays,
           subItems: [
             {
-              name: "All Events",
+              name: 'All Events',
               path: `${userBase.value}/event`,
               pro: false,
             },
@@ -455,19 +466,19 @@ const userMenuGroups = computed<{ title: string; items: MenuItem[] }[]>(() => {
       ],
     },
     {
-      title: "Gate & Attendance",
+      title: 'Gate & Attendance',
       items: [
         {
-          name: "Scan & Gate",
+          name: 'Scan & Gate',
           icon: ScanLine,
           subItems: [
             {
-              name: "Check-in",
+              name: 'Check-in',
               path: `${userBase.value}/checkin`,
               pro: false,
             },
             {
-              name: "Check-out",
+              name: 'Check-out',
               path: `${userBase.value}/checkout`,
               pro: false,
             },
@@ -475,129 +486,106 @@ const userMenuGroups = computed<{ title: string; items: MenuItem[] }[]>(() => {
         },
       ],
     },
-    // Kalau nanti mau aktifkan report per user:
-    // {
-    //   title: "Reports",
-    //   items: [
-    //     {
-    //       name: "Attendance Logs",
-    //       icon: FileBarChart2,
-    //       subItems: [
-    //         {
-    //           name: "Report",
-    //           path: `${userBase.value}/report`,
-    //           pro: false,
-    //         },
-    //         {
-    //           name: "Check-in & Check-out Logs",
-    //           path: `${userBase.value}/checkin/logs`,
-    //           pro: false,
-    //         },
-    //       ],
-    //     },
-    //   ],
-    // },
-  ];
-});
+  ]
+})
 
-// menu yang dipakai
+// menu yang dipakai tergantung role
 const menuGroups = computed(() => {
-  if (isAdmin.value) return adminMenuGroups;
-  if (isUser.value) return userMenuGroups.value;
-  return adminMenuGroups;
-});
+  if (isAdmin.value) return adminMenuGroups
+  if (isUser.value) return userMenuGroups.value
+  // fallback kalau entah bagaimana role nggak kebaca
+  return adminMenuGroups
+})
 
 // ======================
 //     SEARCH MENU
 // ======================
 
-const searchQuery = ref("");
+const searchQuery = ref('')
 
-const normalize = (s: string | undefined) => (s ?? "").trim().toLowerCase();
+const normalizeText = (s: string | undefined) => (s ?? '').trim().toLowerCase()
 
 const matchesQuery = (text: string | undefined) => {
-  const q = normalize(searchQuery.value);
-  if (!q) return true;
-  return normalize(text).includes(q);
-};
+  const q = normalizeText(searchQuery.value)
+  if (!q) return true
+  return normalizeText(text).includes(q)
+}
 
 const subItemMatches = (subItem: MenuItem) => {
-  const q = normalize(searchQuery.value);
-  if (!q) return true;
-  return matchesQuery(subItem.name);
-};
+  const q = normalizeText(searchQuery.value)
+  if (!q) return true
+  return matchesQuery(subItem.name)
+}
 
 const itemMatches = (item: MenuItem) => {
-  const q = normalize(searchQuery.value);
-  if (!q) return true;
+  const q = normalizeText(searchQuery.value)
+  if (!q) return true
 
-  if (matchesQuery(item.name)) return true;
+  if (matchesQuery(item.name)) return true
 
   if (item.subItems && item.subItems.length > 0) {
-    return item.subItems.some((sub) => matchesQuery(sub.name));
+    return item.subItems.some((sub) => matchesQuery(sub.name))
   }
 
-  return false;
-};
+  return false
+}
 
 const groupMatches = (group: { title: string; items: MenuItem[] }) => {
-  const q = normalize(searchQuery.value);
-  if (!q) return true;
+  const q = normalizeText(searchQuery.value)
+  if (!q) return true
 
-  if (matchesQuery(group.title)) return true;
+  if (matchesQuery(group.title)) return true
 
-  return group.items.some((item) => itemMatches(item));
-};
+  return group.items.some((item) => itemMatches(item))
+}
 
 // ======================
 //     ACTIVE / SUBMENU
 // ======================
 
-const isActive = (path?: string) => path !== undefined && route.path === path;
+const isActive = (path?: string) => path !== undefined && route.path === path
 
 const toggleSubmenu = (groupIndex: number, itemIndex: number) => {
-  const key = `${groupIndex}-${itemIndex}`;
-  openSubmenu.value = openSubmenu.value === key ? null : key;
-};
+  const key = `${groupIndex}-${itemIndex}`
+  openSubmenu.value = openSubmenu.value === key ? null : key
+}
 
 const isSubmenuOpen = (groupIndex: number, itemIndex: number) => {
-  const key = `${groupIndex}-${itemIndex}`;
-  const group = menuGroups.value[groupIndex];
-  if (!group) return openSubmenu.value === key;
+  const key = `${groupIndex}-${itemIndex}`
+  const group = menuGroups.value[groupIndex]
+  if (!group) return openSubmenu.value === key
 
-  const item = group.items[itemIndex];
-  if (!item) return openSubmenu.value === key;
+  const item = group.items[itemIndex]
+  if (!item) return openSubmenu.value === key
 
-  const hasActiveSubItem = item.subItems?.some((subItem) =>
-    isActive(subItem.path)
-  );
-  return openSubmenu.value === key || !!hasActiveSubItem;
-};
+  const hasActiveSubItem = item.subItems?.some((subItem) => isActive(subItem.path))
+  return openSubmenu.value === key || !!hasActiveSubItem
+}
 
-// khusus user management di bawah
-const isSubmenuOpenUserManagement = ref(false);
+// khusus user management di bawah (footer admin)
+const isSubmenuOpenUserManagement = ref(false)
 const toggleUserManagement = () => {
-  isSubmenuOpenUserManagement.value = !isSubmenuOpenUserManagement.value;
-};
+  isSubmenuOpenUserManagement.value = !isSubmenuOpenUserManagement.value
+}
 
 // ======================
 //      TRANSITIONS
 // ======================
 
 const startTransition = (el: Element, done?: () => void) => {
-  const element = el as HTMLElement;
-  element.style.height = "auto";
-  const height = element.scrollHeight;
-  element.style.height = "0px";
-  void element.offsetHeight;
-  element.style.height = height + "px";
-  if (done) done();
-};
+  const element = el as HTMLElement
+  element.style.height = 'auto'
+  const height = element.scrollHeight
+  element.style.height = '0px'
+  void element.offsetHeight
+  element.style.height = height + 'px'
+  if (done) done()
+}
 
 const endTransition = (el: Element) => {
-  const element = el as HTMLElement;
-  element.style.height = "";
-};
+  const element = el as HTMLElement
+  element.style.height = ''
+}
 </script>
 
 <style scoped>

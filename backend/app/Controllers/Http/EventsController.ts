@@ -15,7 +15,7 @@ export default class EventsController {
     status?: string,
     redeemedAt?: DateTime | null,
     redeemedBy?: string | null,
-    groupName?: string | null,
+    groupName?: string | null
   ) {
     return {
       id: barcode.id,
@@ -42,8 +42,8 @@ export default class EventsController {
         status === 'Redeemed'
           ? 'Ticket has already been redeemed'
           : status === 'Recheckin'
-            ? 'Ticket is ready for recheckin'
-            : 'Ticket is Pending and ready for redemption',
+          ? 'Ticket is ready for recheckin'
+          : 'Ticket is Pending and ready for redemption',
     }
   }
 
@@ -69,22 +69,7 @@ export default class EventsController {
       })
     }
 
-    /**
-     * ====== HANDLE id_user ======
-     * Kalau mau dibuat WAJIB → uncomment blok di bawah ini:
-     *
-     * if (
-     *   id_user === undefined ||
-     *   id_user === null ||
-     *   id_user === '' ||
-     *   Number.isNaN(Number(id_user))
-     * ) {
-     *   return response.badRequest({ error: 'id_user is required and must be a valid number' })
-     * }
-     */
-
-    // Versi lebih fleksibel: kalau dikirim → paksa jadi number,
-    // kalau tidak dikirim → simpan null (tidak undefined).
+    // Versi fleksibel id_user
     let ownerId: number | null = null
     if (id_user !== undefined && id_user !== null && id_user !== '') {
       const parsed = Number(id_user)
@@ -102,10 +87,10 @@ export default class EventsController {
       eventCategoryId: randomUUID(),
       categoryName: category,
       status: eventStatus,
-      id_user: ownerId, // ← sudah pasti number atau null, tidak undefined
+      id_user: ownerId,
     }))
 
-    await (Event as any).createMany(eventsPayload)
+    await Event.createMany(eventsPayload)
 
     return response.created({
       message: 'Event created successfully',
@@ -119,14 +104,8 @@ export default class EventsController {
 
   /**
    * GET /events
-   * Dipakai ADMIN & USER.
-   * - Admin: /events → semua event
-   * - User : /events?id_user=123 → filter by id_user
-   *
-   * Frontend expect: ARRAY langsung
-   * [
-   *   { event_id, event_name, status, id_user, totalCategories }
-   * ]
+   * Admin: /events
+   * User : /events?id_user=123
    */
   public async index({ request, response }: HttpContextContract) {
     const idUserFilterRaw = request.input('id_user') as number | string | undefined
@@ -148,7 +127,6 @@ export default class EventsController {
       if (!Number.isNaN(idUserFilterNum)) {
         eventsQuery.where('id_user', idUserFilterNum)
       } else {
-        // kalau filter yang dikirim bukan angka, kosongkan saja result daripada error
         return response.ok([])
       }
     }
@@ -168,8 +146,6 @@ export default class EventsController {
 
   /**
    * GET /events/:eventId
-   * Dipakai frontend buat cek owner event (id_user).
-   * Frontend bisa pakai: { id_event, name, status, id_user }
    */
   public async show({ params, response }: HttpContextContract) {
     const { eventId } = params
@@ -193,10 +169,6 @@ export default class EventsController {
 
   /**
    * PUT /events/:eventId
-   * Body: { name?, status? }
-   *
-   * Frontend di Master Event kirim:
-   * await api.put(`/events/${id_event}`, { name, status })
    */
   public async update({ params, request, response }: HttpContextContract) {
     const { eventId } = params
@@ -228,9 +200,6 @@ export default class EventsController {
 
   /**
    * DELETE /events/:eventId
-   * Frontend pakai: await api.delete(`/events/${id_event}`)
-   *
-   * Sekaligus hapus QR, group, dsb.
    */
   public async deleteEvent({ params, response }: HttpContextContract) {
     const { eventId } = params
@@ -254,27 +223,16 @@ export default class EventsController {
     }
   }
 
-  /**
-   * Alias destroy() untuk resource route:
-   * Route.resource('events', 'EventsController')
-   */
   public async destroy(ctx: HttpContextContract) {
     return this.deleteEvent(ctx)
   }
 
   // ========================================================================
-  //  EVENT CATEGORIES (dipakai di Dashboard & Event detail)
+  //  EVENT CATEGORIES
   // ========================================================================
 
   /**
    * GET /events/:eventId/categories
-   *
-   * Frontend expect:
-   * {
-   *   categories: [
-   *     { id: string, name: string }
-   *   ]
-   * }
    */
   public async getCategories({ params, response }: HttpContextContract) {
     const { eventId } = params
@@ -292,9 +250,6 @@ export default class EventsController {
     return response.ok({ categories: categoryList })
   }
 
-  /**
-   * Alias categories() kalau kamu mau pakai nama method pendek di route.
-   */
   public async categories(ctx: HttpContextContract) {
     return this.getCategories(ctx)
   }
@@ -320,7 +275,7 @@ export default class EventsController {
       id_user: existingEvent.id_user,
     }))
 
-    await (Event as any).createMany(newCategories)
+    await Event.createMany(newCategories)
 
     return response.created({ message: 'Categories added successfully' })
   }
@@ -468,9 +423,9 @@ export default class EventsController {
 
     const categories = groupCategories.map((gc) => ({
       id: gc.id,
-      group_scans_id: gc.group_scans_id,
-      event_category_id: gc.event_category_id,
-      event_id: gc.event_id,
+      group_scans_id: gc.groupScansId,
+      event_category_id: gc.eventCategoryId,
+      event_id: gc.eventId,
     }))
 
     return response.ok(categories)
@@ -491,9 +446,9 @@ export default class EventsController {
     }
 
     const groupCategory = new GroupCategory()
-    groupCategory.group_scans_id = parseInt(groupScanId, 10)
-    groupCategory.event_category_id = eventCategoryId
-    groupCategory.event_id = eventId
+    groupCategory.groupScansId = parseInt(groupScanId, 10)
+    groupCategory.eventCategoryId = eventCategoryId
+    groupCategory.eventId = eventId
     await groupCategory.save()
 
     return response.created({ message: 'Category added to group successfully' })
@@ -549,7 +504,7 @@ export default class EventsController {
           'kota',
           'email',
           'no_hp',
-          'other_data',
+          'other_data'
         )
 
       const qrcodeIds = qrcodes.map((qr) => qr.id)
@@ -626,17 +581,18 @@ export default class EventsController {
 
     try {
       console.log('Reading file content...')
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const fsPromises = require('fs').promises
       const fileContent = await fsPromises.readFile(file.tmpPath!, 'utf8')
       console.log('File content length:', fileContent.length)
 
-      const lines = fileContent.split('\n').filter((line) => line.trim() !== '')
+      const lines = fileContent.split('\n').filter((line: string) => line.trim() !== '')
       console.log('Number of lines:', lines.length)
       if (lines.length === 0) {
         return response.badRequest({ message: 'CSV file is empty' })
       }
 
-      const headers = lines[0].split(',').map((h) => h.trim().toLowerCase())
+      const headers = lines[0].split(',').map((h: string) => h.trim().toLowerCase())
       console.log('Headers:', headers)
       const requiredHeaders = ['qrcode', 'name', 'other_data']
       const missingHeaders = requiredHeaders.filter((h) => !headers.includes(h))
@@ -652,7 +608,9 @@ export default class EventsController {
         if (values.length >= headers.length) {
           const row: any = {}
           headers.forEach((header, index) => {
-            row[header] = values[index] ? values[index].trim().replace(/^"|"$/g, '') : ''
+            row[header] = values[index]
+              ? values[index].trim().replace(/^"|"$/g, '')
+              : ''
           })
           csvData.push(row)
         }
@@ -677,7 +635,7 @@ export default class EventsController {
       }
 
       const qrcodesData = csvData.map((row) => {
-        console.log('CSV Row:', row) // Debug log
+        console.log('CSV Row:', row)
         return {
           table_events_id: tableEventsId,
           qrcode: row.qrcode,
@@ -700,11 +658,13 @@ export default class EventsController {
       for (let i = 0; i < qrcodesData.length; i += batchSize) {
         const batch = qrcodesData.slice(i, i + batchSize)
         console.log('Inserting batch:', batch.length, 'rows')
-        await (CategoryQrcode as any).createMany(batch)
+        await CategoryQrcode.createMany(batch)
       }
 
       console.log('Upload successful - returning 201')
-      return response.created({ message: `${qrcodesData.length} QR codes uploaded successfully` })
+      return response.created({
+        message: `${qrcodesData.length} QR codes uploaded successfully`,
+      })
     } catch (error: any) {
       console.error('Error processing CSV:', error)
 
@@ -754,7 +714,9 @@ export default class EventsController {
     try {
       const count = await CategoryQrcode.query().where('event_id', eventId).count('* as total')
 
-      return response.ok({ totalQrcodes: parseInt(count[0].$extras.total as string, 10) })
+      return response.ok({
+        totalQrcodes: parseInt(count[0].$extras.total as string, 10),
+      })
     } catch (error) {
       console.error('Error counting QR codes:', error)
       return response.status(500).json({ error: 'Failed to count QR codes' })
@@ -769,7 +731,9 @@ export default class EventsController {
         .where('event_category_id', eventCategoryId)
         .count('* as total')
 
-      return response.ok({ count: parseInt(count[0].$extras.total as string, 10) })
+      return response.ok({
+        count: parseInt(count[0].$extras.total as string, 10),
+      })
     } catch (error) {
       console.error('Error checking group categories:', error)
       return response.status(500).json({ error: 'Failed to check group categories' })
@@ -782,7 +746,9 @@ export default class EventsController {
     try {
       const count = await CheckinLog.query().where('eventId', eventId).count('* as total')
 
-      return response.ok({ totalCheckins: parseInt(count[0].$extras.total as string, 10) })
+      return response.ok({
+        totalCheckins: parseInt(count[0].$extras.total as string, 10),
+      })
     } catch (error) {
       console.error('Error counting checkins:', error)
       return response.status(500).json({ error: 'Failed to count checkins' })
@@ -798,7 +764,9 @@ export default class EventsController {
         .where('status', 'Redeemed')
         .count('* as total')
 
-      return response.ok({ totalRedeemed: parseInt(count[0].$extras.total as string, 10) })
+      return response.ok({
+        totalRedeemed: parseInt(count[0].$extras.total as string, 10),
+      })
     } catch (error) {
       console.error('Error counting redeemed:', error)
       return response.status(500).json({ error: 'Failed to count redeemed' })
@@ -1028,7 +996,7 @@ export default class EventsController {
           eventRecord,
           log.status,
           log.scannedAt,
-          log.scannedBy,
+          log.scannedBy
         ),
         log: {
           id: log.id,

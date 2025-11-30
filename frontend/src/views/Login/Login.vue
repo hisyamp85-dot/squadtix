@@ -225,12 +225,13 @@ import { useRouter } from 'vue-router'
 import api from '@/lib/axios'
 
 const router = useRouter()
+
 const username = ref('')
 const password = ref('')
 const showPassword = ref(false)
 const errorMessage = ref('')
 
-type NormalizedRole = 'admin' | 'user' | 'panitia'
+type NormalizedRole = 'admin' | 'user'
 
 interface LoginUser {
   id: number | string
@@ -242,33 +243,20 @@ const togglePasswordVisibility = () => {
   showPassword.value = !showPassword.value
 }
 
-function normalizeRole(rawRole: any): NormalizedRole {
-  if (rawRole == null) {
-    return 'user'
-  }
-
-  if (typeof rawRole === 'number') {
-    if (rawRole === 1) return 'admin'
-    if (rawRole === 2) return 'panitia'
-    return 'user'
-  }
-
-  const r = String(rawRole).toLowerCase().trim()
+function normalizeRole(rawRole: unknown): NormalizedRole {
+  const r = String(rawRole ?? '').toLowerCase().trim()
 
   if (['admin', 'administrator', 'superadmin'].includes(r)) {
     return 'admin'
   }
 
-  if (['panitia', 'staff', 'operator'].includes(r)) {
-    return 'panitia'
-  }
-
-  // default: user
+  // kalau selain itu dianggap user biasa
   return 'user'
 }
 
 const handleSubmit = async () => {
   errorMessage.value = ''
+
   try {
     const res = await api.post('/users/login', {
       username: username.value,
@@ -276,8 +264,6 @@ const handleSubmit = async () => {
     })
 
     const data: any = res.data ?? {}
-
-    // Ambil user dari beberapa kemungkinan bentuk response
     const rawUser: any = data.user ?? data.data?.user ?? data
 
     const rawRole =
@@ -295,14 +281,10 @@ const handleSubmit = async () => {
 
     localStorage.setItem('user', JSON.stringify(user))
 
-    // Routing berdasarkan role sudah dinormalisasi
-    if (user.role === 'admin' || user.role === 'panitia') {
+    if (user.role === 'admin') {
       await router.push('/')
-    } else if (user.role === 'user') {
-      await router.push(`/${user.id}`)
     } else {
-      // ini hampir nggak kepakai karena normalizeRole selalu return salah satu di atas
-      errorMessage.value = 'Role tidak dikenali, silakan hubungi admin.'
+      await router.push(`/${user.id}`)
     }
   } catch (error: any) {
     const message =

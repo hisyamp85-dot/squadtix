@@ -2,8 +2,7 @@ import { DateTime } from 'luxon'
 import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
 
 export default class CategoryQrcode extends BaseModel {
-  public static query: any // Add this to suppress TS error for query method
-  public static table = 'category_qrcodes'
+   public static table = 'category_qrcodes'
 
   @column({ isPrimary: true })
   public id: number

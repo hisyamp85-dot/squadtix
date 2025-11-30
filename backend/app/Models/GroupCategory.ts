@@ -1,31 +1,42 @@
 import { DateTime } from 'luxon'
-import { BaseModel, BelongsTo, belongsTo, column } from '@ioc:Adonis/Lucid/Orm'
+import {
+  BaseModel,
+  BelongsTo,
+  belongsTo,
+  column,
+} from '@ioc:Adonis/Lucid/Orm'
 import GroupScan from 'App/Models/GroupScan'
 
 export default class GroupCategory extends BaseModel {
-  public static query: any // Add this to suppress TS error for query method
   public static table = 'group_categories'
 
   @column({ isPrimary: true })
   public id: number
 
-  @column()
-  public group_scans_id: number
+  // Kolom group_scans_id di DB
+  @column({ columnName: 'group_scans_id' })
+  public groupScansId: number
 
-  @column()
-  public event_category_id: string
+  // Kolom event_category_id di DB
+  @column({ columnName: 'event_category_id' })
+  public eventCategoryId: string
 
-  @column()
-  public event_id: string
+  // Kolom event_id di DB
+  @column({ columnName: 'event_id' })
+  public eventId: string
 
-  @column.dateTime({ autoCreate: true })
-  public created_at: DateTime
+  @column.dateTime({ columnName: 'created_at', autoCreate: true })
+  public createdAt: DateTime
 
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
-  public updated_at: DateTime
+  @column.dateTime({
+    columnName: 'updated_at',
+    autoCreate: true,
+    autoUpdate: true,
+  })
+  public updatedAt: DateTime
 
   @belongsTo(() => GroupScan, {
-    foreignKey: 'group_scans_id',
+    foreignKey: 'groupScansId',
   })
   public groupScan: BelongsTo<typeof GroupScan>
 }

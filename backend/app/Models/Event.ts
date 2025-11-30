@@ -2,7 +2,7 @@ import { DateTime } from 'luxon'
 import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
 
 export default class Event extends BaseModel {
-  public static query: any // Add this to suppress TS error for query method
+  public static table = 'events' // optional, kalau nama tabel di DB 'events'
 
   @column({ isPrimary: true })
   public id: number
@@ -19,8 +19,9 @@ export default class Event extends BaseModel {
   @column()
   public categoryName: string
 
+  // DI SINI: jangan union type, cukup string
   @column()
-  public status: 'Active' | 'Inactive'
+  public status: string
 
   @column()
   public id_user: number

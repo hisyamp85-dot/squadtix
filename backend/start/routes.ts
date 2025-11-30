@@ -18,6 +18,8 @@
 |
 */
 
+console.log("⚡ ROUTES FILE LOADED FROM:", __filename)
+
 import Route from '@ioc:Adonis/Core/Route'
 
 

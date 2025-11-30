@@ -2,7 +2,6 @@ import { DateTime } from 'luxon'
 import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
 
 export default class User extends BaseModel {
-  public static query: any // Add this to suppress TS error for query method
   public static table = 'users'
 
   @column({ isPrimary: true, columnName: 'id_user' })
@@ -31,6 +30,4 @@ export default class User extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public updatedAt: DateTime
-
-
 }
