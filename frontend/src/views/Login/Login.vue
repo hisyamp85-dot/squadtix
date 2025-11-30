@@ -230,37 +230,86 @@ const password = ref('')
 const showPassword = ref(false)
 const errorMessage = ref('')
 
+type NormalizedRole = 'admin' | 'user' | 'panitia'
+
+interface LoginUser {
+  id: number | string
+  role: NormalizedRole
+  [key: string]: any
+}
+
 const togglePasswordVisibility = () => {
   showPassword.value = !showPassword.value
+}
+
+function normalizeRole(rawRole: any): NormalizedRole {
+  if (rawRole == null) {
+    return 'user'
+  }
+
+  if (typeof rawRole === 'number') {
+    if (rawRole === 1) return 'admin'
+    if (rawRole === 2) return 'panitia'
+    return 'user'
+  }
+
+  const r = String(rawRole).toLowerCase().trim()
+
+  if (['admin', 'administrator', 'superadmin'].includes(r)) {
+    return 'admin'
+  }
+
+  if (['panitia', 'staff', 'operator'].includes(r)) {
+    return 'panitia'
+  }
+
+  // default: user
+  return 'user'
 }
 
 const handleSubmit = async () => {
   errorMessage.value = ''
   try {
-    const response = await api.post('/users/login', {
+    const res = await api.post('/users/login', {
       username: username.value,
       password: password.value,
     })
-    const user = response.data as { id: number; role: string }
+
+    const data: any = res.data ?? {}
+
+    // Ambil user dari beberapa kemungkinan bentuk response
+    const rawUser: any = data.user ?? data.data?.user ?? data
+
+    const rawRole =
+      rawUser.role ??
+      rawUser.role_name ??
+      rawUser.role_id ??
+      rawUser.group
+
+    const normalizedRole = normalizeRole(rawRole)
+
+    const user: LoginUser = {
+      ...rawUser,
+      role: normalizedRole,
+    }
+
     localStorage.setItem('user', JSON.stringify(user))
-    if (user.role === 'Admin') {
-      router.push('/')
-    } else if (user.role === 'User') {
-      router.push(`/${user.id}`)
+
+    // Routing berdasarkan role sudah dinormalisasi
+    if (user.role === 'admin' || user.role === 'panitia') {
+      await router.push('/')
+    } else if (user.role === 'user') {
+      await router.push(`/${user.id}`)
     } else {
-      errorMessage.value = 'Unknown role.'
+      // ini hampir nggak kepakai karena normalizeRole selalu return salah satu di atas
+      errorMessage.value = 'Role tidak dikenali, silakan hubungi admin.'
     }
-  } catch (error: unknown) {
-    if (error && typeof error === 'object' && 'response' in error) {
-      const axiosError = error as { response?: { data?: { error?: string } } }
-      if (axiosError.response?.data?.error) {
-        errorMessage.value = axiosError.response.data.error
-      } else {
-        errorMessage.value = 'Login failed. Please try again.'
-      }
-    } else {
-      errorMessage.value = 'Login failed. Please try again.'
-    }
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      'Login gagal. Periksa username / password Anda.'
+    errorMessage.value = message
   }
 }
 </script>

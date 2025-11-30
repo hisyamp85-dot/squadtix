@@ -12,6 +12,7 @@ import App from './App.vue'
 import router from './router'
 import VueApexCharts from 'vue3-apexcharts'
 import Vue3Toastify from 'vue3-toastify'
+import './axios-setup'
 
 const app = createApp(App)
 

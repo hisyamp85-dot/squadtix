@@ -273,12 +273,19 @@ export default class CheckinsController {
       }
 
       const events = await eventsQuery
-      const eventMap = new Map(events.map((event) => [event.eventCategoryId, event]))
+
+      // Map dengan tipe jelas
+      const eventMap = new Map<string, Event>()
+      events.forEach((ev) => {
+        eventMap.set(ev.eventCategoryId, ev)
+      })
 
       const payload = logs
         .map((log) => {
           const barcode = log.categoryQrcode
-          const event = barcode ? eventMap.get(barcode.event_category_id) : null
+          const event: Event | null = barcode
+            ? eventMap.get(barcode.event_category_id) ?? null
+            : null
 
           // kalau pakai filter user dan event-nya bukan milik user → skip
           if (userIdFilter && !event) {
@@ -303,9 +310,8 @@ export default class CheckinsController {
                   event_category_id: barcode.event_category_id,
                 }
               : null,
-            eventName: (event as Event | null)?.eventName ?? null,
-            categoryName: (event as Event | null)?.categoryName ?? null,
-
+            eventName: event ? event.eventName : null,
+            categoryName: event ? event.categoryName : null,
           }
         })
         .filter((row): row is NonNullable<typeof row> => row !== null)
@@ -360,12 +366,18 @@ export default class CheckinsController {
       }
 
       const events = await eventsQuery
-      const eventMap = new Map(events.map((event) => [event.eventCategoryId, event]))
+
+      const eventMap = new Map<string, Event>()
+      events.forEach((ev) => {
+        eventMap.set(ev.eventCategoryId, ev)
+      })
 
       const payload = logs
         .map((log) => {
           const barcode = log.categoryQrcode
-          const event = barcode ? eventMap.get(barcode.event_category_id) : null
+          const event: Event | null = barcode
+            ? eventMap.get(barcode.event_category_id) ?? null
+            : null
 
           if (userIdFilter && !event) {
             return null
@@ -386,9 +398,8 @@ export default class CheckinsController {
                   event_category_id: barcode.event_category_id,
                 }
               : null,
-            eventName: (event as Event | null)?.eventName ?? null,
-            categoryName: (event as Event | null)?.categoryName ?? null,
-
+            eventName: event ? event.eventName : null,
+            categoryName: event ? event.categoryName : null,
           }
         })
         .filter((row): row is NonNullable<typeof row> => row !== null)

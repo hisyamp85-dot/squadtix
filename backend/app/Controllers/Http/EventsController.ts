@@ -30,7 +30,7 @@ export default class EventsController {
       categoryName: eventRecord?.categoryName ?? null,
       groupName: groupName ?? null,
       id_transaction: barcode.id_transaction || null,
-      
+
       nip: barcode.nip || null,
       ukuran_baju: barcode.ukuran_jaket || null,
       instansi: barcode.instansi || null,
@@ -51,6 +51,10 @@ export default class EventsController {
   //  EVENT CRUD
   // ========================================================================
 
+  /**
+   * POST /events
+   * Body: { name, categories: string[], status?, id_user? }
+   */
   public async store({ request, response }: HttpContextContract) {
     const { name, categories, status, id_user } = request.only([
       'name',
@@ -59,29 +63,73 @@ export default class EventsController {
       'id_user',
     ])
 
+    if (!name || !Array.isArray(categories) || categories.length === 0) {
+      return response.badRequest({
+        error: 'name and categories[] are required',
+      })
+    }
+
+    /**
+     * ====== HANDLE id_user ======
+     * Kalau mau dibuat WAJIB → uncomment blok di bawah ini:
+     *
+     * if (
+     *   id_user === undefined ||
+     *   id_user === null ||
+     *   id_user === '' ||
+     *   Number.isNaN(Number(id_user))
+     * ) {
+     *   return response.badRequest({ error: 'id_user is required and must be a valid number' })
+     * }
+     */
+
+    // Versi lebih fleksibel: kalau dikirim → paksa jadi number,
+    // kalau tidak dikirim → simpan null (tidak undefined).
+    let ownerId: number | null = null
+    if (id_user !== undefined && id_user !== null && id_user !== '') {
+      const parsed = Number(id_user)
+      if (!Number.isNaN(parsed)) {
+        ownerId = parsed
+      }
+    }
+
+    const eventStatus: string = status || 'Active'
     const eventId = randomUUID()
 
-    const events = (categories as string[]).map((category: string) => ({
+    const eventsPayload = (categories as string[]).map((category: string) => ({
       eventId,
       eventName: name,
       eventCategoryId: randomUUID(),
       categoryName: category,
-      status,
-      id_user,
+      status: eventStatus,
+      id_user: ownerId, // ← sudah pasti number atau null, tidak undefined
     }))
 
-    await (Event as any).createMany(events)
+    await (Event as any).createMany(eventsPayload)
 
-    return response.created({ message: 'Event created successfully' })
+    return response.created({
+      message: 'Event created successfully',
+      event_id: eventId,
+      event_name: name,
+      status: eventStatus,
+      id_user: ownerId,
+      totalCategories: categories.length,
+    })
   }
 
   /**
-   * INDEX: dipakai ADMIN & USER.
-   * - Admin: panggil /events (tanpa filter) → semua event.
-   * - User : panggil /events?id_user=123 → hanya event milik user itu.
+   * GET /events
+   * Dipakai ADMIN & USER.
+   * - Admin: /events → semua event
+   * - User : /events?id_user=123 → filter by id_user
+   *
+   * Frontend expect: ARRAY langsung
+   * [
+   *   { event_id, event_name, status, id_user, totalCategories }
+   * ]
    */
   public async index({ request, response }: HttpContextContract) {
-    const idUserFilter = request.input('id_user') as number | string | undefined
+    const idUserFilterRaw = request.input('id_user') as number | string | undefined
 
     const eventsQuery = Event.query()
       .select('eventId')
@@ -91,8 +139,18 @@ export default class EventsController {
       .count('* as totalCategories')
       .groupBy('eventId', 'eventName', 'status', 'id_user')
 
-    if (idUserFilter !== undefined && idUserFilter !== null && idUserFilter !== '') {
-      eventsQuery.where('id_user', idUserFilter)
+    if (
+      idUserFilterRaw !== undefined &&
+      idUserFilterRaw !== null &&
+      idUserFilterRaw !== ''
+    ) {
+      const idUserFilterNum = Number(idUserFilterRaw)
+      if (!Number.isNaN(idUserFilterNum)) {
+        eventsQuery.where('id_user', idUserFilterNum)
+      } else {
+        // kalau filter yang dikirim bukan angka, kosongkan saja result daripada error
+        return response.ok([])
+      }
     }
 
     const events = await eventsQuery
@@ -102,12 +160,122 @@ export default class EventsController {
       event_name: event.eventName,
       status: event.status,
       id_user: event.id_user,
-      totalCategories: parseInt(event.$extras.totalCategories as string, 10),
+      totalCategories: Number(event.$extras.totalCategories ?? 0),
     }))
 
     return response.ok(result)
   }
 
+  /**
+   * GET /events/:eventId
+   * Dipakai frontend buat cek owner event (id_user).
+   * Frontend bisa pakai: { id_event, name, status, id_user }
+   */
+  public async show({ params, response }: HttpContextContract) {
+    const { eventId } = params
+
+    const event = await Event.query()
+      .where('eventId', eventId)
+      .select('eventId', 'eventName', 'status', 'id_user')
+      .first()
+
+    if (!event) {
+      return response.notFound({ message: 'Event not found' })
+    }
+
+    return response.ok({
+      id_event: event.eventId,
+      name: event.eventName,
+      status: event.status,
+      id_user: event.id_user,
+    })
+  }
+
+  /**
+   * PUT /events/:eventId
+   * Body: { name?, status? }
+   *
+   * Frontend di Master Event kirim:
+   * await api.put(`/events/${id_event}`, { name, status })
+   */
+  public async update({ params, request, response }: HttpContextContract) {
+    const { eventId } = params
+    const { name, status } = request.only(['name', 'status'])
+
+    const event = await Event.query().where('eventId', eventId).first()
+
+    if (!event) {
+      return response.notFound({ message: 'Event not found' })
+    }
+
+    const payload: any = {}
+    if (name) payload.eventName = name
+    if (status) payload.status = status
+
+    if (Object.keys(payload).length === 0) {
+      return response.badRequest({ error: 'Nothing to update' })
+    }
+
+    await Event.query().where('eventId', eventId).update(payload)
+
+    return response.ok({
+      message: 'Event updated successfully',
+      event_id: eventId,
+      name: name ?? event.eventName,
+      status: status ?? event.status,
+    })
+  }
+
+  /**
+   * DELETE /events/:eventId
+   * Frontend pakai: await api.delete(`/events/${id_event}`)
+   *
+   * Sekaligus hapus QR, group, dsb.
+   */
+  public async deleteEvent({ params, response }: HttpContextContract) {
+    const { eventId } = params
+
+    try {
+      const eventExists = await Event.query().where('eventId', eventId).first()
+
+      if (!eventExists) {
+        return response.notFound({ message: 'Event not found' })
+      }
+
+      await CategoryQrcode.query().where('event_id', eventId).delete()
+      await GroupCategory.query().where('event_id', eventId).delete()
+      await GroupScan.query().where('event_id', eventId).delete()
+      await Event.query().where('eventId', eventId).delete()
+
+      return response.ok({ message: 'Event and all related data deleted successfully' })
+    } catch (error) {
+      console.error('Error deleting event:', error)
+      return response.status(500).json({ error: 'Failed to delete event' })
+    }
+  }
+
+  /**
+   * Alias destroy() untuk resource route:
+   * Route.resource('events', 'EventsController')
+   */
+  public async destroy(ctx: HttpContextContract) {
+    return this.deleteEvent(ctx)
+  }
+
+  // ========================================================================
+  //  EVENT CATEGORIES (dipakai di Dashboard & Event detail)
+  // ========================================================================
+
+  /**
+   * GET /events/:eventId/categories
+   *
+   * Frontend expect:
+   * {
+   *   categories: [
+   *     { id: string, name: string }
+   *   ]
+   * }
+   */
   public async getCategories({ params, response }: HttpContextContract) {
     const { eventId } = params
 
@@ -122,6 +290,13 @@ export default class EventsController {
 
     response.header('Cache-Control', 'no-cache')
     return response.ok({ categories: categoryList })
+  }
+
+  /**
+   * Alias categories() kalau kamu mau pakai nama method pendek di route.
+   */
+  public async categories(ctx: HttpContextContract) {
+    return this.getCategories(ctx)
   }
 
   public async addCategories({ params, request, response }: HttpContextContract) {
@@ -184,50 +359,6 @@ export default class EventsController {
     await category.delete()
 
     return response.ok({ message: 'Category deleted successfully' })
-  }
-
-  /**
-   * SHOW: dipakai frontend buat cek owner event (id_user).
-   * Penting: sekarang return juga id_user → supaya versi USER bisa filter miliknya.
-   */
-  public async show({ params, response }: HttpContextContract) {
-    const { eventId } = params
-
-    const event = await Event.query()
-      .where('eventId', eventId)
-      .select('eventId', 'eventName', 'status', 'id_user')
-      .first()
-
-    if (!event) {
-      return response.notFound({ message: 'Event not found' })
-    }
-
-    return response.ok({
-      id_event: event.eventId,
-      name: event.eventName,
-      status: event.status,
-      id_user: event.id_user,
-    })
-  }
-
-  public async update({ params, request, response }: HttpContextContract) {
-    const { eventId } = params
-    const { name, status } = request.only(['name', 'status'])
-
-    const event = await Event.query().where('eventId', eventId).first()
-
-    if (!event) {
-      return response.notFound({ message: 'Event not found' })
-    }
-
-    await Event.query()
-      .where('eventId', eventId)
-      .update({
-        eventName: name,
-        status: status,
-      })
-
-    return response.ok({ message: 'Event updated successfully' })
   }
 
   // ========================================================================
@@ -393,8 +524,8 @@ export default class EventsController {
   public async count({ response }: HttpContextContract) {
     try {
       const count = await Event.query().countDistinct('event_id as total')
-      return response.status(200).json({ count: count[0].$extras.total })
-    } catch (err) {
+      return response.status(200).json({ count: Number(count[0].$extras.total ?? 0) })
+    } catch (err: any) {
       console.error('Failed to count events:', err)
       return response.status(500).json({ error: err.message })
     }
@@ -418,7 +549,7 @@ export default class EventsController {
           'kota',
           'email',
           'no_hp',
-          'other_data'
+          'other_data',
         )
 
       const qrcodeIds = qrcodes.map((qr) => qr.id)
@@ -546,7 +677,7 @@ export default class EventsController {
       }
 
       const qrcodesData = csvData.map((row) => {
-        console.log('CSV Row:', row); // Debug log to see each CSV row parsed
+        console.log('CSV Row:', row) // Debug log
         return {
           table_events_id: tableEventsId,
           qrcode: row.qrcode,
@@ -561,9 +692,8 @@ export default class EventsController {
           kota: row.kota || '',
           email: row.email || '',
           no_hp: row.no_hp || '',
-        };
-      });
-      console.log('Prepared qrcodesData:', qrcodesData); // Debug log after mapping
+        }
+      })
       console.log('Prepared data for insertion:', qrcodesData.length, 'rows')
 
       const batchSize = 100
@@ -681,7 +811,18 @@ export default class EventsController {
 
   public async addCategoryQrcode({ params, request, response }: HttpContextContract) {
     const { eventId, eventCategoryId } = params
-    const { qrcode, name, other_data, id_transaction, nip, ukuran_jaket, instansi, kota, email, no_hp } = request.only([
+    const {
+      qrcode,
+      name,
+      other_data,
+      id_transaction,
+      nip,
+      ukuran_jaket,
+      instansi,
+      kota,
+      email,
+      no_hp,
+    } = request.only([
       'qrcode',
       'name',
       'other_data',
@@ -864,7 +1005,6 @@ export default class EventsController {
         .first()
 
       const isRecheckin = !!existingLog
-
       const scannedBy = redeemedBy
 
       const log = await CheckinLog.create({
@@ -929,10 +1069,10 @@ export default class EventsController {
         statusCounts[stat.status] = parseInt(stat.$extras.count as string, 10)
       })
 
-      const checkin = statusCounts['checkin'] || 0
-      const recheckin = statusCounts['recheckin'] || 0
-      const checkout = statusCounts['checkout'] || 0
-      const recheckout = statusCounts['recheckout'] || 0
+      const checkin = statusCounts['checkin'] || statusCounts['Checkin'] || 0
+      const recheckin = statusCounts['recheckin'] || statusCounts['Recheckin'] || 0
+      const checkout = statusCounts['checkout'] || statusCounts['Checkout'] || 0
+      const recheckout = statusCounts['recheckout'] || statusCounts['Recheckout'] || 0
 
       const totalCheckins = checkin + recheckin + checkout + recheckout
       const available = totalTickets - totalCheckins
@@ -948,35 +1088,6 @@ export default class EventsController {
     } catch (error) {
       console.error('Error fetching category stats:', error)
       return response.status(500).json({ error: 'Failed to fetch category stats' })
-    }
-  }
-
-  // ========================================================================
-  //  DELETE EVENT + CHILDREN
-  // ========================================================================
-
-  public async deleteEvent({ params, response }: HttpContextContract) {
-    const { eventId } = params
-
-    try {
-      const eventExists = await Event.query().where('eventId', eventId).first()
-
-      if (!eventExists) {
-        return response.notFound({ message: 'Event not found' })
-      }
-
-      await CategoryQrcode.query().where('event_id', eventId).delete()
-
-      await GroupCategory.query().where('event_id', eventId).delete()
-
-      await GroupScan.query().where('event_id', eventId).delete()
-
-      await Event.query().where('eventId', eventId).delete()
-
-      return response.ok({ message: 'Event and all related data deleted successfully' })
-    } catch (error) {
-      console.error('Error deleting event:', error)
-      return response.status(500).json({ error: 'Failed to delete event' })
     }
   }
 }

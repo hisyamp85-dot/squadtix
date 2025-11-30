@@ -21,10 +21,22 @@
           />
         </div>
 
-        <!-- User Dropdown -->
+        <!-- User (Admin: dropdown, User page: read-only current user) -->
         <div class="mb-3">
           <label class="block text-sm font-medium">User</label>
-          <div class="relative">
+
+          <!-- Kalau lockedUserId dikirim dari parent (halaman user), tampil readonly -->
+          <div v-if="lockedUserId" class="mt-1">
+            <input
+              type="text"
+              class="w-full border rounded p-2 bg-gray-100 text-gray-700"
+              :value="lockedUserName || selectedUserName || 'Current User'"
+              disabled
+            />
+          </div>
+
+          <!-- Kalau TIDAK ada lockedUserId → mode Admin, pakai dropdown -->
+          <div v-else class="relative mt-1">
             <button
               type="button"
               @click="toggleDropdown"
@@ -32,7 +44,12 @@
             >
               <span>{{ selectedUserName || 'Select User' }}</span>
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 9l-7 7-7-7"
+                ></path>
               </svg>
             </button>
 
@@ -98,7 +115,8 @@
             @blur="commitCurrentCategoryInput"
           />
           <p class="mt-1 text-xs text-gray-500">
-            Contoh: ketik <span class="font-semibold">VIP</span>, diam sebentar → otomatis jadi kategori.
+            Contoh: ketik <span class="font-semibold">VIP</span>, diam sebentar → otomatis jadi
+            kategori.
           </p>
         </div>
 
@@ -172,12 +190,10 @@ interface EventForm {
 
 interface User {
   id: number
-  id_user: string
   name: string
   username: string
   email: string
   role: string
-  project: string
   status: string
 }
 
@@ -185,6 +201,10 @@ interface Props {
   show: boolean
   initialForm: EventForm
   eventName?: string
+
+  /** Kalau di halaman user, kirim lockedUserId → dropdown dimatikan */
+  lockedUserId?: number | null
+  lockedUserName?: string
 }
 
 const props = defineProps<Props>()
@@ -202,20 +222,33 @@ const categories = ref<string[]>([])
 const editingIndex = ref<number | null>(null)
 const editingCategory = ref('')
 
+// user dropdown state
 const users = ref<User[]>([])
 const searchQuery = ref('')
 const isDropdownOpen = ref(false)
 const selectedUserName = ref('')
 
-// timeout untuk auto-commit category saat user berhenti mengetik
 let categoryTypingTimeout: number | null = null
 
+const lockedUserId = computed(() => props.lockedUserId ?? null)
+const lockedUserName = computed(() => props.lockedUserName ?? '')
+
+// ============ FETCH USERS (hanya perlu untuk mode admin) ============
 onMounted(async () => {
-  try {
-    const response = await api.get<User[]>('/users')
-    users.value = response.data
-  } catch (err) {
-    console.error('Failed to fetch users:', err)
+  if (!lockedUserId.value) {
+    // hanya fetch users kalau dropdown dipakai
+    try {
+      const response = await api.get<User[]>('/users')
+      users.value = response.data
+    } catch (err) {
+      console.error('Failed to fetch users:', err)
+    }
+  }
+
+  // kalau lockedUserId ada → set ke formData
+  if (lockedUserId.value) {
+    formData.value.id_user = lockedUserId.value
+    selectedUserName.value = lockedUserName.value || ''
   }
 })
 
@@ -223,28 +256,43 @@ onBeforeUnmount(() => {
   clearCategoryTypingTimeout()
 })
 
+// reset modal ketika dibuka
 watch(
   () => props.show,
   (newShow) => {
     if (newShow) {
       formData.value = { ...props.initialForm }
+
+      if (!formData.value.status) {
+        formData.value.status = 'Active'
+      }
+
       if (props.eventName) {
         formData.value.name = props.eventName
       }
-      categories.value = [...props.initialForm.categories]
+
+      categories.value = [...(props.initialForm.categories || [])]
       newCategory.value = ''
       editingIndex.value = null
       editingCategory.value = ''
-      selectedUserName.value = ''
       isDropdownOpen.value = false
       clearCategoryTypingTimeout()
+
+      // Kalau lockedUserId → set id_user & label
+      if (lockedUserId.value) {
+        formData.value.id_user = lockedUserId.value
+        selectedUserName.value = lockedUserName.value || ''
+      } else {
+        // mode admin: kosongkan label (user harus pilih)
+        selectedUserName.value = ''
+      }
     } else {
       clearCategoryTypingTimeout()
     }
   }
 )
 
-// ===== Category auto logic =====
+// ================== CATEGORY AUTO LOGIC ==================
 
 const clearCategoryTypingTimeout = () => {
   if (categoryTypingTimeout !== null) {
@@ -253,7 +301,6 @@ const clearCategoryTypingTimeout = () => {
   }
 }
 
-// Tambah kategori dengan cek duplikat (case-insensitive)
 const addCategoryToken = (value: string) => {
   const token = value.trim()
   if (!token) return
@@ -269,16 +316,14 @@ const addCategoryToken = (value: string) => {
   categories.value.push(token)
 }
 
-// Auto-commit setelah user berhenti mengetik beberapa saat
 const handleAutoCategoryInput = () => {
   clearCategoryTypingTimeout()
 
   categoryTypingTimeout = window.setTimeout(() => {
     commitCurrentCategoryInput()
-  }, 800) // bisa diubah ke 500 kalau mau lebih responsif
+  }, 800)
 }
 
-// Commit input saat auto timeout / blur / sebelum submit
 const commitCurrentCategoryInput = () => {
   clearCategoryTypingTimeout()
 
@@ -289,18 +334,17 @@ const commitCurrentCategoryInput = () => {
   newCategory.value = ''
 }
 
-// Backspace: kalau input kosong, ambil chip terakhir untuk diedit
 const handleBackspaceCategory = (event: KeyboardEvent) => {
   if (newCategory.value === '' && categories.value.length > 0) {
     event.preventDefault()
     const last = categories.value.pop()
     if (last) {
-      newCategory.value = last // user bisa edit → auto-commit lagi setelah jeda
+      newCategory.value = last
     }
   }
 }
 
-// ===== Editing chips =====
+// ================== EDITING CHIPS ==================
 
 const startEditing = (index: number) => {
   editingIndex.value = index
@@ -321,7 +365,6 @@ const saveEditing = () => {
   if (editingIndex.value !== null) {
     const value = editingCategory.value.trim()
     if (value) {
-      // optional: cegah duplikat saat edit
       const exists = categories.value.some(
         (c, i) => i !== editingIndex.value && c.toLowerCase() === value.toLowerCase()
       )
@@ -348,7 +391,7 @@ const removeCategory = (index: number) => {
   }
 }
 
-// ===== User dropdown =====
+// ================== USER DROPDOWN (mode Admin) ==================
 
 const filteredUsers = computed(() => {
   if (!searchQuery.value) return users.value
@@ -368,16 +411,20 @@ const selectUser = (user: User) => {
   isDropdownOpen.value = false
 }
 
-// ===== Submit =====
+// ================== SUBMIT ==================
 
 const handleSubmit = () => {
-  // pastikan input terakhir yang belum sempat auto-commit ikut tersimpan
   if (newCategory.value.trim()) {
     commitCurrentCategoryInput()
   }
 
+  // Kalau di halaman user → lockedUserId selalu ada, cek juga
   if (!formData.value.id_user) {
     toast.warning('User must be selected')
+    return
+  }
+  if (!formData.value.name || !formData.value.name.trim()) {
+    toast.warning('Event name is required')
     return
   }
   if (categories.value.length === 0) {
@@ -386,6 +433,9 @@ const handleSubmit = () => {
   }
 
   formData.value.categories = categories.value
+
+  console.log('[AddNewEventModal] submit data:', formData.value)
+
   emit('submit', formData.value)
   emit('close')
 }

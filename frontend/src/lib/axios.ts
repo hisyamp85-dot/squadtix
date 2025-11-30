@@ -1,14 +1,30 @@
-import axios from "axios"
+import axios from "axios";
+
+/**
+ * Ambil baseURL dari Vite env
+ * Contoh: https://squadtix.konsolnasbawasluri.com
+ */
+const baseURL =
+  (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/+$/, "") ||
+  window.location.origin;
 
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:3333',
+  baseURL,
+  withCredentials: true, // kalau pakai session/cookie
   headers: {
+    Accept: "application/json",
     "Content-Type": "application/json",
+    "X-Requested-With": "XMLHttpRequest",
   },
-  withCredentials: false, // set true kalau butuh kirim cookie/session
-})
+  timeout: 30000,
+});
 
-// Log baseURL for debugging
-console.log('Axios baseURL:', api.defaults.baseURL)
+api.interceptors.response.use(
+  (response: any) => response,
+  (error: any) => {
+    console.error("API Error:", error.response || error);
+    return Promise.reject(error);
+  }
+);
 
-export default api
+export default api;

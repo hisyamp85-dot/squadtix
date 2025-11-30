@@ -11,6 +11,15 @@
     "start": "start",
     "tests": "tests"
   },
+  "providers": [
+    "@adonisjs/core",
+    "@adonisjs/lucid",
+    "@adonisjs/events"
+  ],
+  "commands": [
+    "./commands",
+    "@adonisjs/lucid/build/commands"
+  ],
   "metaFiles": [
     {
       "pattern": "public/**",
@@ -20,5 +29,14 @@
       "pattern": "resources/**",
       "reloadServer": false
     }
-  ]
+],
+  "aceProviders": [
+    "@adonisjs/lucid",
+    "@adonisjs/events"
+  ],
+  "aliases": {
+    "App": "App",
+    "Route": "Adonis/Core/Route",
+    "Event": "Adonis/Core/Event"
+  }
 }

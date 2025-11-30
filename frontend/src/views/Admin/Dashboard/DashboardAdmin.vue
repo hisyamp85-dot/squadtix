@@ -743,13 +743,10 @@ import {
   ref,
   watch,
 } from 'vue'
-import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import Button from '@/components/ui/Button.vue'
 import api from '@/lib/axios'
-
-const router = useRouter()
 
 // ================= TYPES =================
 interface CheckinLog {
@@ -757,7 +754,6 @@ interface CheckinLog {
   qrcode: string
   scanned_at: string | null
   scanned_by: string | null
-  // backend boleh menambahkan status/type utk bedakan checkin/checkout
   status?: string | null
   type?: string | null
   barcode: {
@@ -821,22 +817,51 @@ const isLoading = ref(false)
 const currentSlideIndex = ref(0)
 const slideInterval = ref<number | null>(null)
 
+// ================== HELPERS: NORMALISASI RESPONSE ==================
+function normalizeArray<T = any>(raw: any, preferKey?: string): T[] {
+  // Kalau sudah array, langsung balikin
+  if (Array.isArray(raw)) return raw as T[]
+
+  if (raw && typeof raw === 'object') {
+    // Kalau diminta preferKey dulu (mis. "events", "logs", dll)
+    if (preferKey && Array.isArray((raw as any)[preferKey])) {
+      return (raw as any)[preferKey] as T[]
+    }
+
+    // Pola umum lain
+    if (Array.isArray((raw as any).data)) return (raw as any).data as T[]
+    if (Array.isArray((raw as any).items)) return (raw as any).items as T[]
+    if (Array.isArray((raw as any).result)) return (raw as any).result as T[]
+  }
+
+  console.warn('normalizeArray: unexpected shape, return []', raw)
+  return []
+}
+
+function normalizeCount(raw: any): number {
+  if (typeof raw === 'number') return raw
+  if (!raw || typeof raw !== 'object') return 0
+  return Number((raw as any).count ?? (raw as any).total ?? 0) || 0
+}
+
 // ================= FETCHERS =================
 const fetchEvents = async () => {
   try {
     const response = await api.get('/events')
-    const data = response.data as Array<{
+    const list = normalizeArray<{
       event_id: string
       event_name: string
       status?: string
-    }>
-    events.value = data.map((e) => ({
+    }>(response.data, 'events')
+
+    events.value = list.map((e) => ({
       event_id: e.event_id,
       event_name: e.event_name,
       status: e.status ?? null,
     }))
   } catch (error) {
     console.error('Failed to fetch events:', error)
+    events.value = []
   }
 }
 
@@ -847,10 +872,25 @@ const fetchCategories = async (eventId: string) => {
       return
     }
     const response = await api.get(`/events/${eventId}/categories`)
-    const data = response.data as { categories: Array<{ name: string; id: string }> }
-    categories.value = data.categories
+    // Bisa jadi: { categories: [...] } atau langsung [...]
+    const raw = response.data
+    let list: CategorySummary[] = []
+
+    if (Array.isArray(raw)) {
+      list = raw as CategorySummary[]
+    } else if (raw && Array.isArray((raw as any).categories)) {
+      list = (raw as any).categories as CategorySummary[]
+    } else if (raw && Array.isArray((raw as any).data)) {
+      list = (raw as any).data as CategorySummary[]
+    } else {
+      console.warn('Unexpected category response shape:', raw)
+      list = []
+    }
+
+    categories.value = list
   } catch (error) {
     console.error('Failed to fetch categories:', error)
+    categories.value = []
   }
 }
 
@@ -863,10 +903,26 @@ const fetchLogs = async () => {
         eventCategoryId: selectedCategoryId.value || undefined,
       },
     })
-    const data = response.data as { logs: CheckinLog[] }
-    logs.value = data.logs
+
+    const raw = response.data
+    // Bisa { logs: [...] } atau [...] atau { data: [...] }
+    let list: CheckinLog[] = []
+
+    if (Array.isArray(raw)) {
+      list = raw as CheckinLog[]
+    } else if (raw && Array.isArray((raw as any).logs)) {
+      list = (raw as any).logs as CheckinLog[]
+    } else if (raw && Array.isArray((raw as any).data)) {
+      list = (raw as any).data as CheckinLog[]
+    } else {
+      console.warn('Unexpected logs response shape:', raw)
+      list = []
+    }
+
+    logs.value = list
   } catch (error) {
     console.error('Failed to fetch logs:', error)
+    logs.value = []
   } finally {
     isLoading.value = false
   }
@@ -875,8 +931,8 @@ const fetchLogs = async () => {
 const fetchUsers = async () => {
   try {
     const response = await api.get('/users')
-    const data = response.data as any[]
-    users.value = data.map((u) => ({
+    const list = normalizeArray<any>(response.data, 'users')
+    users.value = list.map((u) => ({
       id: u.id,
       name: u.name,
       role: u.role ?? null,
@@ -884,16 +940,17 @@ const fetchUsers = async () => {
     }))
   } catch (error) {
     console.error('Failed to fetch users:', error)
+    users.value = []
   }
 }
 
 const fetchUserCount = async () => {
   try {
     const response = await api.get('/users/count')
-    const data = response.data as { count: number }
-    userCount.value = Number(data.count ?? 0)
+    userCount.value = normalizeCount(response.data)
   } catch (error) {
     console.error('Failed to fetch user count:', error)
+    userCount.value = 0
   }
 }
 
@@ -939,7 +996,11 @@ const selectedCategoryLabel = computed(() => {
 })
 
 const todayLabel = computed(() =>
-  new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
+  new Date().toLocaleDateString('id-ID', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }),
 )
 
 const latestLogs = computed(() => {
@@ -1012,12 +1073,10 @@ const uniqueScannersCount = computed(() => {
   return set.size
 })
 
-// === TOTAL CHECKOUT (berdasarkan field status/type dari backend) ===
 const totalCheckout = computed(() => {
   if (!logs.value.length) return 0
   return logs.value.filter((log) => {
     const raw = ((log.status || log.type || '') as string).toLowerCase()
-    // fleksibel: checkout / checked-out / redeem, dll.
     return raw.includes('checkout') || raw.includes('checked-out') || raw.includes('redeem')
   }).length
 })
@@ -1238,7 +1297,6 @@ const roleSummary = computed(() => {
 const highlightSlides = computed<HighlightSlide[]>(() => {
   const slides: HighlightSlide[] = []
 
-  // Slide 1 - Overview event / filter aktif
   slides.push({
     pill: selectedEventId.value
       ? 'Event Filter Active'
@@ -1256,7 +1314,6 @@ const highlightSlides = computed<HighlightSlide[]>(() => {
       : 'All categories',
   })
 
-  // Slide 2 - Top Event
   if (topEvents.value.length) {
     const top = topEvents.value[0]
     slides.push({
@@ -1271,7 +1328,6 @@ const highlightSlides = computed<HighlightSlide[]>(() => {
     })
   }
 
-  // Slide 3 - Top Category
   if (topCategories.value.length) {
     const cat = topCategories.value[0]
     slides.push({
@@ -1286,7 +1342,6 @@ const highlightSlides = computed<HighlightSlide[]>(() => {
     })
   }
 
-  // Slide 4 - Top Scanner
   if (topScanners.value.length) {
     const scanner = topScanners.value[0]
     slides.push({
@@ -1308,7 +1363,7 @@ const highlightSlides = computed<HighlightSlide[]>(() => {
 const goToSlide = (idx: number) => {
   if (!highlightSlides.value.length) return
   currentSlideIndex.value = idx % highlightSlides.value.length
-  startAutoSlide() // restart timer tiap klik dot
+  startAutoSlide()
 }
 
 const startAutoSlide = () => {
@@ -1318,7 +1373,7 @@ const startAutoSlide = () => {
     if (!highlightSlides.value.length) return
     currentSlideIndex.value =
       (currentSlideIndex.value + 1) % highlightSlides.value.length
-  }, 6000) // 6 detik per slide
+  }, 6000)
 }
 
 const stopAutoSlide = () => {
@@ -1328,148 +1383,3 @@ const stopAutoSlide = () => {
   }
 }
 </script>
-
-<style scoped>
-/* Page enter */
-@keyframes pageIn {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.animate-page-in {
-  animation: pageIn 0.45s ease-out;
-}
-
-/* Cards fade + slide */
-@keyframes cardIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-.animate-card {
-  animation: cardIn 0.4s ease-out both;
-}
-
-/* Simple fade up */
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.animate-fade-up {
-  animation: fadeUp 0.35s ease-out both;
-}
-
-/* Bar grow animation */
-@keyframes barGrow {
-  from {
-    width: 0;
-  }
-  to {
-    width: 100%;
-  }
-}
-.animate-bar {
-  animation: barGrow 0.6s ease-out;
-}
-
-/* Ring breathing */
-@keyframes ringPulse {
-  0% {
-    stroke-width: 3.5;
-    opacity: 0.7;
-  }
-  50% {
-    stroke-width: 4;
-    opacity: 1;
-  }
-  100% {
-    stroke-width: 3.5;
-    opacity: 0.7;
-  }
-}
-.animate-ring {
-  animation: ringPulse 2s ease-in-out infinite;
-}
-
-/* Gradient float background */
-@keyframes gradientFloat {
-  0% {
-    transform: translateY(0) translateX(0) scale(1);
-    opacity: 0.7;
-  }
-  50% {
-    transform: translateY(6px) translateX(4px) scale(1.05);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(0) translateX(0) scale(1);
-    opacity: 0.7;
-  }
-}
-.animate-gradient-float {
-  animation: gradientFloat 4s ease-in-out infinite;
-}
-
-/* Pop-in (ring center) */
-@keyframes popIn {
-  from {
-    transform: scale(0.9);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-.animate-pop {
-  animation: popIn 0.4s ease-out;
-}
-
-/* Slide fade in (opsional) */
-@keyframes slideFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-[data-slide-active="true"] {
-  animation: slideFadeIn 0.4s ease-out;
-}
-
-/* Delay helpers */
-.delay-1 {
-  animation-delay: 0.05s !important;
-}
-.delay-2 {
-  animation-delay: 0.1s !important;
-}
-.delay-3 {
-  animation-delay: 0.15s !important;
-}
-.delay-4 {
-  animation-delay: 0.2s !important;
-}
-.delay-5 {
-  animation-delay: 0.25s !important;
-}
-</style>
