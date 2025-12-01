@@ -17,19 +17,20 @@
           </select>
         </div>
 
-        <!-- AUTO CATEGORY INPUT -->
+        <!-- Add Category Name -->
         <div class="mb-3">
           <label class="block text-sm font-medium">Add Category Name</label>
           <input
             v-model="newCategory"
             type="text"
             class="w-full border rounded p-2"
-            placeholder="Type category name"
-            @input="handleAutoInput"
-            @keydown.enter.prevent
+            placeholder="Type category name and press Enter to add"
+            @keydown.enter.prevent="commitCurrentInput"
             @keydown.backspace="handleBackspace"
-            @blur="commitCurrentInput"
           />
+          <p class="mt-1 text-xs text-gray-500">
+            Contoh: ketik <span class="font-semibold">VIP</span>, tekan Enter → jadi kategori.
+          </p>
         </div>
 
         <!-- Chip list -->
@@ -82,8 +83,9 @@
             Cancel
           </button>
           <button
-            type="submit"
+            type="button"
             class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            @click="handleSubmit"
           >
             Save
           </button>
@@ -125,8 +127,7 @@ const categories = ref<string[]>([])
 const editingIndex = ref<number | null>(null)
 const editingCategory = ref('')
 
-// timeout untuk auto-commit saat user berhenti mengetik
-let typingTimeout: number | null = null
+
 
 // Reset setiap modal dibuka
 watch(
@@ -138,23 +139,13 @@ watch(
       newCategory.value = ''
       editingIndex.value = null
       editingCategory.value = ''
-    } else {
-      clearTypingTimeout()
     }
   }
 )
 
 // bersihkan timeout kalau komponen di-unmount
 onBeforeUnmount(() => {
-  clearTypingTimeout()
 })
-
-const clearTypingTimeout = () => {
-  if (typingTimeout !== null) {
-    clearTimeout(typingTimeout)
-    typingTimeout = null
-  }
-}
 
 // tambah token ke list, cegah duplikat (case-insensitive)
 const addTokens = (tokens: string[]) => {
@@ -171,27 +162,19 @@ const addTokens = (tokens: string[]) => {
   }
 }
 
-// Auto-commit setelah user berhenti mengetik beberapa saat
-const handleAutoInput = () => {
-  clearTypingTimeout()
 
-  // kalau mau lebih cepat / lambat, ubah 800 jadi 500 atau 1000 ms
-  typingTimeout = window.setTimeout(() => {
-    commitCurrentInput()
-  }, 800)
-}
 
 // Commit input saat:
 // - user berhenti mengetik (dipanggil dari handleAutoInput)
 // - input blur
 // - sebelum submit (di handleSubmit)
 const commitCurrentInput = () => {
-  clearTypingTimeout()
-
   const value = newCategory.value.trim()
   if (!value) return
 
-  addTokens([value])
+  // Split by comma and add multiple categories
+  const categoriesToAdd = value.split(',').map(cat => cat.trim()).filter(cat => cat)
+  addTokens(categoriesToAdd)
   newCategory.value = ''
 }
 

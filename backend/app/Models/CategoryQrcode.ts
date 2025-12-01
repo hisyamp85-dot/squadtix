@@ -28,12 +28,22 @@ export default class CategoryQrcode extends BaseModel {
   @column()
   public id_transaction: string | null
   
-  @column()
-  public nip: string
+
 
   @column()
-  public ukuran_jaket: string
+  public ukuran_baju: string
 
+  @column()
+  public provinsi: string | null
+
+  @column()
+  public jabatan: string | null
+
+  @column()
+  public status_kehadiran: string | null
+
+  @column.dateTime()
+  public tanggal_kehadiran: DateTime | null
 
   @column()
   public instansi: string

@@ -23,7 +23,23 @@ export default defineConfig({
       '/users': {
         target: 'http://localhost:3333',
         changeOrigin: true
-      }
+      },
+      '/events': {
+      target: 'http://localhost:3333',
+      changeOrigin: true,
+    },
+    '/member-users': {
+      target: 'http://localhost:3333',
+      changeOrigin: true,
+    },
+    '/checkin': {
+      target: 'http://localhost:3333',
+      changeOrigin: true,
+    },
+    '/ping': {
+      target: 'http://localhost:3333',
+      changeOrigin: true,
+    },
     }
   }
 })

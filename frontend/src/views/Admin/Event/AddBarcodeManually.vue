@@ -4,7 +4,7 @@
     class="fixed inset-0 flex items-center justify-center bg-white/10 backdrop-blur-sm z-80"
     :class="isExpanded || isHovered ? 'lg:left-[290px]' : 'lg:left-[90px]'"
   >
-    <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md relative">
+    <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md relative max-h-[60vh] overflow-y-auto">
       <h2 class="text-lg font-bold mb-4">Add Barcode Manually</h2>
 
       <form @submit.prevent="handleSubmit">
@@ -26,15 +26,9 @@
             required
           />
         </div>
-           <div class="mb-3">
-          <label class="block text-sm font-medium">NIP</label>
-          <input
-            v-model="formData.nip"
-            type="text"
-            class="w-full border rounded p-2"
-            required
-          />
-        </div>
+
+        
+
         <div class="mb-3">
           <label class="block text-sm font-medium">Name</label>
           <input
@@ -43,7 +37,7 @@
             class="w-full border rounded p-2"
             required
           />
-        </div>    
+        </div>
         <div class="mb-3">
           <label class="block text-sm font-medium">Instansi</label>
           <select
@@ -58,7 +52,16 @@
           </select>
         </div>
         <div class="mb-3">
-          <label class="block text-sm font-medium">kota</label>
+          <label class="block text-sm font-medium">Provinsi</label>
+          <input
+            v-model="formData.provinsi"
+            type="text"
+            class="w-full border rounded p-2"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label class="block text-sm font-medium">Kabupaten/Kota</label>
           <input
             v-model="formData.kota"
             type="text"
@@ -67,6 +70,26 @@
           />
         </div>
           
+          <div class="mb-3">
+          <label class="block text-sm font-medium">Jabatan</label>
+          <input
+            v-model="formData.jabatan"
+            type="text"
+            class="w-full border rounded p-2"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="block text-sm font-medium">Ho Handphone</label>
+          <input
+            v-model="formData.no_hp"
+            type="text"
+            class="w-full border rounded p-2"
+            required
+          />
+        </div>
+
         <div class="mb-3">
           <label class="block text-sm font-medium">Email</label>
           <input
@@ -77,31 +100,71 @@
           />
         </div>
 
-          <div class="mb-3">
-          <label class="block text-sm font-medium">Ho Handphone</label>
-          <input
-            v-model="formData.no_hp"
-            type="text"
-            class="w-full border rounded p-2"
-            required
-          />
-        </div>
+          
         
         <div class="mb-3">
-          <label class="block text-sm font-medium">Ukuran Jaket</label>
+          <label class="block text-sm font-medium">Ukuran Baju</label>
           <select
-            v-model="formData.ukuran_jaket"
+            v-model="formData.ukuran_baju"
             class="w-full border rounded p-2"
             required
           >
-            <option disabled value="">Pilih Ukuran Jaket</option>
+            <option disabled value="">Pilih Ukuran Baju</option>
             <option value="S">S</option>
             <option value="M">M</option>
             <option value="L">L</option>
             <option value="XL">XL</option>
             <option value="XXL">XXL</option>
             <option value="XXXL">XXXL</option>
+            <option value="L">XXXXL</option>
+            <option value="XL">XXXXXL</option>
+            <option value="XXL">XXXXXXL</option>
+            <option value="XXXL">XXXXXXXL</option>
           </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="block text-sm font-medium">Status Kehadiran</label>
+          <select
+            v-model="formData.status_kehadiran"
+            class="w-full border rounded p-2"
+            required
+          >
+            <option disabled value="">Pilih Status Kehadiran</option>
+            <option value="hadir">Hadir</option>
+            <option value="tidak_hadir">Tidak Hadir</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="block text-sm font-medium">Tanggal Kehadiran</label>
+          <div class="relative">
+            <flat-pickr
+              v-model="formData.tanggal_kehadiran"
+              :config="flatpickrConfig"
+              class="w-full border rounded p-2"
+              placeholder="Pilih tanggal kehadiran"
+            />
+            <span
+              class="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400"
+            >
+              <svg
+                class="fill-current"
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M6.66659 1.5415C7.0808 1.5415 7.41658 1.87729 7.41658 2.2915V2.99984H12.5833V2.99984V2.2915C12.5833 1.87729 12.919 1.5415 13.3333 1.5415C13.7475 1.5415 14.0833 1.87729 14.0833 2.2915V2.99984L15.4166 2.99984C16.5212 2.99984 17.4166 3.89527 17.4166 4.99984V7.49984V15.8332C17.4166 16.9377 16.5212 17.8332 15.4166 17.8332H4.58325C3.47868 17.8332 2.58325 16.9377 2.58325 15.8332V7.49984V4.99984C2.58325 3.89527 3.47868 2.99984 4.58325 2.99984L5.91659 2.99984V2.2915C5.91659 1.87729 6.25237 1.5415 6.66659 1.5415ZM6.66659 4.49984H4.58325C4.30711 4.49984 4.08325 4.7237 4.08325 4.99984V6.74984H15.9166V4.99984C15.9166 4.7237 15.6927 4.49984 15.4166 4.49984H13.3333H6.66659ZM15.9166 8.24984H4.08325V15.8332C4.08325 16.1093 4.30711 16.3332 4.58325 16.3332H15.4166C15.6927 16.3332 15.9166 16.1093 15.9166 15.8332V8.24984Z"
+                  fill=""
+                />
+              </svg>
+            </span>
+          </div>
         </div>
         
         <div class="mb-3">
@@ -138,17 +201,22 @@ import { ref } from 'vue'
 import { useSidebar } from '@/composables/useSidebar'
 import { toast } from 'vue3-toastify'
 import api from '@/lib/axios'
+import flatPickr from 'vue-flatpickr-component'
+import 'flatpickr/dist/flatpickr.css'
 
 interface BarcodeForm {
   id_transaction: string
   qrcode: string
-  nip: string
   name: string
   instansi: string
+  provinsi: string | null
   kota: string
+  jabatan: string | null
   email: string
   no_hp: string
-  ukuran_jaket: string
+  ukuran_baju: string
+  status_kehadiran: string
+  tanggal_kehadiran: string | null
   other_data: string | null
 }
 
@@ -170,15 +238,25 @@ const { isExpanded, isHovered } = useSidebar()
 const formData = ref<BarcodeForm>({
   id_transaction: '',
   qrcode: '',
-  nip: '',
   name: '',
   instansi: '',
+  provinsi: null,
   kota: '',
+  jabatan: null,
   email: '',
   no_hp: '',
-  ukuran_jaket: '',
+  ukuran_baju: '',
+  status_kehadiran: '',
+  tanggal_kehadiran: null,
   other_data: null
 })
+
+const flatpickrConfig = {
+  dateFormat: 'Y-m-d',
+  altInput: true,
+  altFormat: 'F j, Y',
+  wrap: true,
+}
 
 async function handleSubmit() {
   try {

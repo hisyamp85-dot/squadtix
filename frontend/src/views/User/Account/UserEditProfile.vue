@@ -273,9 +273,9 @@ const goBack = () => {
   if (!stored) return router.push('/login')
 
   const parsed = JSON.parse(stored)
-  // jika role User → redirect ke /:id/profile
+  // jika role User → redirect ke /user/:id/profile
   if (parsed.role === 'User') {
-    router.push(`/${parsed.id}/profile`)
+    router.push(`/user/${parsed.id}/profile`)
   } else {
     // jika admin → arahkan ke /profile biasa
     router.push('/profile')

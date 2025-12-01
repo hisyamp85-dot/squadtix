@@ -1,4 +1,4 @@
-
+ 
 <template>
   <div
     v-if="show"
@@ -177,7 +177,7 @@ function triggerFileInput() {
 }
 
 function downloadTemplate() {
-  const csvContent = `id_transaction,qrcode,nip,name,instansi,kota,email,no_hp,ukuran_jaket,other_data\nTIX-123ABC,ABC123,123456,test1,Bawaslu RI,Jakarta,test1@example.com,08123456789,XL,Reguler\nTIX-456DEF,DEF456,789101,test2,Bawaslu Provinsi,Bandung,test2@example.com,08987654321,L,VIP\n`
+  const csvContent = `id_transaction,qrcode,name,instansi,provinsi,kota,jabatan,email,no_hp,ukuran_baju,status_kehadiran,tanggal_kehadiran,other_data\nTIX-123ABC,ABC123,test1,Bawaslu RI,DKI Jakarta,Jakarta,Ketua,test1@example.com,08123456789,XL,hadir,2025-12-09,Reguler\nTIX-456DEF,DEF456,test2,Bawaslu Provinsi,Jawa Barat,Bandung,Sekretaris,test2@example.com,08987654321,L,tidak_hadir,,VIP\n`
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
   const link = document.createElement('a')
   const url = URL.createObjectURL(blob)

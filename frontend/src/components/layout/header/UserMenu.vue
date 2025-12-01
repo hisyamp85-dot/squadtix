@@ -36,10 +36,8 @@
       <ul class="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
         <li v-for="item in menuItems" :key="item.routeName">
           <router-link
-            :to="['UserEditProfile', 'ProfileEdit'].includes(item.routeName)
-              ? (userData?.role === 'Admin'
-                  ? { name: 'Profile' }
-                  : { name: 'UserProfile', params: { id: userData?.id } })
+            :to="item.routeName === 'UserEditProfile'
+              ? { name: item.routeName, params: { id: userData?.id } }
               : { name: item.routeName }"
             class="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
           >
@@ -82,7 +80,7 @@ const userData = computed(() => {
 })
 
 const menuItems = computed(() => {
-  if (userData.value?.role === 'Admin') {
+  if (userData.value?.role?.toLowerCase() === 'admin') {
     return [
       { routeName: 'ProfileEdit', icon: UserCircleIcon, text: 'Edit profile' },
       // { routeName: 'Chat', icon: SettingsIcon, text: 'Account settings' },
@@ -90,7 +88,7 @@ const menuItems = computed(() => {
     ]
   } else {
     return [
-      { routeName: 'UserEditProfile', icon: UserCircleIcon, text: 'Edit profile' },
+      { routeName: 'UserProfile', icon: UserCircleIcon, text: 'Edit profile' },
       // { routeName: 'Chat', icon: SettingsIcon, text: 'Account settings' },
       // { routeName: 'Support', icon: InfoCircleIcon, text: 'Support' }
     ]

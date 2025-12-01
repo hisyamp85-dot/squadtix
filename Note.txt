@@ -1,0 +1,49 @@
+Production
+
+squadtix\backend> npm install
+squadtix\backend> npm run build
+copy .env ke build
+node ace generate:key
+squadtix\frontend> npm install
+squadtix\frontend> npm run build
+
+backend
+
+PS D:\project\squadtix\backend\build> taskkill /PID 12345 /F
+ERROR: The process "12345" not found.
+PS D:\project\squadtix\backend\build> netstat -ano | findstr :3333
+  TCP    127.0.0.1:3333         0.0.0.0:0              LISTENING       32228
+PS D:\project\squadtix\backend\build> taskkill /PID 24016 /F
+SUCCESS: The process with PID 32228 has been terminated.
+PS D:\project\squadtix\backend\build> node server.js
+⚡ ROUTES FILE LOADED FROM: D:\project\squadtix\backend\build\start\routes.js
+[01:21:05.736] INFO (backend/14292): started server on 127.0.0.1:3333
+
+frontend
+
+PS D:\project\squadtix\frontend> cd dist
+PS D:\project\squadtix\frontend\dist> npm run preview
+
+> tailadmin-vue-pro-2.0.1@2.0.1 preview
+> vite preview
+
+  ➜  Local:   http://localhost:4173/
+  ➜  Network: http://172.26.64.1:4173/
+  ➜  Network: http://10.10.1.246:4173/
+  ➜  Network: http://192.168.56.1:4173/
+  ➜  press h + enter to show help
+
+
+Development
+
+PS D:\project\squadtix\frontend> npm run dev
+
+> tailadmin-vue-pro-2.0.1@2.0.1 dev
+> vite
+
+
+PS D:\project\squadtix\backend> npm run dev
+
+> backend@1.0.0 dev
+> node ace serve --watch
+

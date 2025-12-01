@@ -108,15 +108,12 @@
             v-model="newCategory"
             type="text"
             class="w-full border rounded p-2"
-            placeholder="Type category name, will auto-add after a short pause"
-            @input="handleAutoCategoryInput"
-            @keydown.enter.prevent
+            placeholder="Type category name and press Enter to add"
+            @keydown.enter="commitCurrentCategoryInput"
             @keydown.backspace="handleBackspaceCategory"
-            @blur="commitCurrentCategoryInput"
           />
           <p class="mt-1 text-xs text-gray-500">
-            Contoh: ketik <span class="font-semibold">VIP</span>, diam sebentar → otomatis jadi
-            kategori.
+            Contoh: ketik <span class="font-semibold">VIP</span>, tekan Enter → jadi kategori.
           </p>
         </div>
 
@@ -228,7 +225,7 @@ const searchQuery = ref('')
 const isDropdownOpen = ref(false)
 const selectedUserName = ref('')
 
-let categoryTypingTimeout: number | null = null
+
 
 const lockedUserId = computed(() => props.lockedUserId ?? null)
 const lockedUserName = computed(() => props.lockedUserName ?? '')
@@ -253,7 +250,6 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  clearCategoryTypingTimeout()
 })
 
 // reset modal ketika dibuka
@@ -276,7 +272,6 @@ watch(
       editingIndex.value = null
       editingCategory.value = ''
       isDropdownOpen.value = false
-      clearCategoryTypingTimeout()
 
       // Kalau lockedUserId → set id_user & label
       if (lockedUserId.value) {
@@ -286,20 +281,11 @@ watch(
         // mode admin: kosongkan label (user harus pilih)
         selectedUserName.value = ''
       }
-    } else {
-      clearCategoryTypingTimeout()
     }
   }
 )
 
-// ================== CATEGORY AUTO LOGIC ==================
-
-const clearCategoryTypingTimeout = () => {
-  if (categoryTypingTimeout !== null) {
-    clearTimeout(categoryTypingTimeout)
-    categoryTypingTimeout = null
-  }
-}
+// ================== CATEGORY LOGIC ==================
 
 const addCategoryToken = (value: string) => {
   const token = value.trim()
@@ -316,21 +302,13 @@ const addCategoryToken = (value: string) => {
   categories.value.push(token)
 }
 
-const handleAutoCategoryInput = () => {
-  clearCategoryTypingTimeout()
-
-  categoryTypingTimeout = window.setTimeout(() => {
-    commitCurrentCategoryInput()
-  }, 800)
-}
-
 const commitCurrentCategoryInput = () => {
-  clearCategoryTypingTimeout()
-
   const value = newCategory.value.trim()
   if (!value) return
 
-  addCategoryToken(value)
+  // Split by comma and add multiple categories
+  const categoriesToAdd = value.split(',').map(cat => cat.trim()).filter(cat => cat)
+  categoriesToAdd.forEach(cat => addCategoryToken(cat))
   newCategory.value = ''
 }
 
