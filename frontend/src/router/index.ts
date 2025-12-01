@@ -15,7 +15,6 @@ const router = createRouter({
       component: () => import('../views/Admin/Dashboard/DashboardAdmin.vue'),
       meta: {
         title: 'Dashboard',
-        // tidak pakai layout: 'user' -> artinya ini area admin
       },
     },
     {
@@ -85,7 +84,7 @@ const router = createRouter({
     {
       path: '/checkout',
       name: 'CheckoutScanner',
-      component: () => import('@/views/Admin/Event/CheckoutScanner.vue'),
+      component: () => import('../views/Admin/Event/CheckoutScanner.vue'),
       meta: {
         requiresAuth: true,
         title: 'Check-out Barcode',
@@ -123,6 +122,8 @@ const router = createRouter({
         title: 'Add Category Group Event',
       },
     },
+
+    // ===== Profile ADMIN =====
     {
       path: '/profile',
       name: 'Profile',
@@ -140,7 +141,7 @@ const router = createRouter({
       },
     },
 
-    // ========= Contoh halaman lain (forms / ui / pages / errors / auth) =========
+    // ========= Halaman lain (forms / ui / pages / errors / auth) =========
     {
       path: '/form-elements',
       name: 'Form Elements',
@@ -248,7 +249,6 @@ const router = createRouter({
 
     // =========================
     //         USER AREA
-    //    Prefix: /user/:id
     // =========================
 
     // Dashboard user
@@ -271,7 +271,7 @@ const router = createRouter({
       },
     },
 
-    // Account / Profile (user)
+    // Account / Profile (USER)
     {
       path: '/user/:id/profile',
       name: 'UserProfile',
@@ -300,7 +300,7 @@ const router = createRouter({
       },
     },
 
-    // Redeem (user)
+    // Redeem (USER)
     {
       path: '/user/:id/redeem/tickets',
       name: 'UserRedeemTickets',
@@ -320,7 +320,7 @@ const router = createRouter({
       },
     },
 
-    // Event (user mirror)
+    // Event (USER mirror)
     {
       path: '/user/:id/event',
       name: 'UserEvent',
@@ -432,20 +432,27 @@ router.beforeEach((to, from, next) => {
   const storedUser = localStorage.getItem('user')
   const userData = storedUser ? JSON.parse(storedUser) : null
 
-  // helper normalisasi role -> 'admin' / 'user'
-  const normalizedRole = (() => {
-    if (!userData || userData.role == null) return null
+  // Normalisasi role: cuma 'admin' & 'user'
+  let normalizedRole = null
+  if (userData && userData.role != null) {
     const r = String(userData.role).toLowerCase().trim()
-    if (['admin', 'administrator', 'superadmin'].includes(r)) return 'admin'
-    return 'user'
-  })()
+    if (r === 'admin') {
+      normalizedRole = 'admin'
+    } else if (r === 'user') {
+      normalizedRole = 'user'
+    } else {
+      normalizedRole = 'user' // default kalau aneh
+    }
+  }
 
-  // Belum login → apapun selain /login diarahkan ke /login
-  if (!userData && to.path !== '/login') {
+  const publicPaths = ['/login', '/signup', '/signin']
+
+  // Belum login → redirect ke /login (kecuali public)
+  if (!userData && !publicPaths.includes(to.path)) {
     return next('/login')
   }
 
-  // Sudah login tapi masih ke /login → arahkan ke dashboard sesuai role
+  // Sudah login tapi ke /login → kirim ke dashboard sesuai role
   if (userData && to.path === '/login') {
     if (normalizedRole === 'admin') {
       return next('/')
@@ -454,36 +461,55 @@ router.beforeEach((to, from, next) => {
     }
   }
 
-  // Route layout 'user' → hanya boleh diakses role 'user' dan id di URL harus sama dengan id login
+  // =========================
+  //     ROUTE layout 'user'
+  // =========================
   if (userData && to.meta.layout === 'user') {
     const routeId = String(to.params.id || '')
     const loggedInId = String(userData.id)
 
-    // kalau bukan role user tapi coba akses layout user → lempar ke admin dashboard
-    if (normalizedRole !== 'user') {
+    // === CASE: ADMIN MASUK KE ROUTE USER ===
+    if (normalizedRole === 'admin') {
+      // Admin nyasar ke /user/:id/profile → paksa ke /profile
+      if (to.name === 'UserProfile') {
+        return next({ name: 'Profile' })
+      }
+
+      // Admin nyasar ke /user/:id/profile/edit → paksa ke /profile/edit
+      if (to.name === 'UserEditProfile') {
+        return next({ name: 'ProfileEdit' })
+      }
+
+      // Admin nyasar ke route user lain → kirim ke dashboard admin
       return next('/')
     }
 
-    // kalau id di URL beda dengan id user → paksa pakai id sendiri
-    if (routeId && routeId !== loggedInId) {
-      return next({
-        name: to.name,
-        params: { ...to.params, id: loggedInId },
-        query: to.query,
-      })
+    // === CASE: USER BIASA ===
+    if (normalizedRole === 'user') {
+      // ID di URL harus sama dengan id user login
+      if (routeId && routeId !== loggedInId) {
+        return next({
+          name: to.name,
+          params: { ...to.params, id: loggedInId },
+          query: to.query,
+        })
+      }
     }
   }
 
-  // User biasa mencoba akses halaman admin (meta.layout !== 'user')
+  // =========================
+  //  USER BIASA COBA AKSES HALAMAN ADMIN
+  // =========================
   if (
     userData &&
     normalizedRole === 'user' &&
     to.meta.layout !== 'user' &&
-    to.path !== '/login'
+    !publicPaths.includes(to.path)
   ) {
     return next(`/user/${userData.id}`)
   }
 
+  // Set judul tab
   document.title = `${to.meta.title || 'SquadTix'} — SquadTix`
 
   next()
