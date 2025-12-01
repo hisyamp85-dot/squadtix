@@ -1,5 +1,4 @@
-# TODO: Move Back Button from UserEditProfile.vue to UserProfileUser.vue
-
-- [x] Remove the Back button from the header in UserEditProfile.vue
-- [ ] Add the Back button to UserProfileUser.vue after the PageBreadcrumb component
-- [ ] Define a goBack function in UserProfileUser.vue to navigate back to home ('/')
+- [x] Update UserAddBarcodeManually.vue template to add max-h-[60vh] overflow-y-auto to modal div
+- [x] Add missing form fields: Instansi, Provinsi, Kota, Jabatan, No HP, Email, Ukuran Baju, Status Kehadiran, Tanggal Kehadiran
+- [x] Move Other Data field to the end
+- [x] Update script: add flatPickr import, update BarcodeForm interface, update formData, add flatpickrConfig

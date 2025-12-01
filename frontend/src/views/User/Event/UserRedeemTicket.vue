@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout>
+  <UserLayout>
     <PageBreadcrumb
       :pageTitle="'Redeem Ticket'"
       :breadcrumbs="breadcrumbs"
@@ -107,53 +107,43 @@
             </div>
           </div>
 
-          <!-- Ticket Information Section -->
+     <!-- Ticket Information Section -->
           <div class="space-y-6">
             <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-6">
-              <h4 class="text-md font-medium text-gray-900 dark:text-white mb-4">
-                Ticket Information
-              </h4>
+              <h4 class="text-md font-medium text-gray-900 dark:text-white mb-4">Ticket Information</h4>
 
               <!-- Scanned Code Display -->
               <div v-if="scannedCode" class="mb-6">
                 <div class="bg-white dark:bg-gray-700 rounded-lg p-4 border-l-4 border-blue-500">
                   <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      Scanned Code:
-                    </span>
-                    <span
-                      class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded"
-                    >
+                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Scanned Code:</span>
+                    <span class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded">
                       {{ scanMethod }}
                     </span>
                   </div>
-                  <p
-                    class="text-lg font-mono font-bold text-gray-900 dark:text-white break-all"
-                  >
+                  <p class="text-lg font-mono font-bold text-gray-900 dark:text-white break-all">
                     {{ scannedCode }}
                   </p>
-
                   <!-- Event and Category Information -->
                   <div v-if="ticketData" class="mt-4 space-y-2">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div class="text-center">
-                        <span
-                          class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide"
-                          >Event</span
-                        >
-                        <p class="text-sm font-medium text-gray-900 dark:text-white">
-                          {{ ticketData.eventName }}
-                        </p>
+                     
+                      <div class="mt-4 space-y-1 text-left">
+                        <p><span class="font-semibold">Event:</span> {{ ticketData.eventName || '—' }}</p>
+                        <p><span class="font-semibold">Category:</span> {{ ticketData.category || '—' }}</p>
+                        
+                        <p><span class="font-semibold">Ukuran Baju:</span> {{ ticketData.ukuran_baju || '—' }}</p>
+                        <p><span class="font-semibold">Instansi:</span> {{ ticketData.instansi || '—' }}</p>
+                        <p><span class="font-semibold">Provinsi:</span> {{ ticketData.provinsi || '—' }}</p>
+                        <p><span class="font-semibold">Kota:</span> {{ ticketData.kota || '—' }}</p>
+                        <p><span class="font-semibold">Jabatan:</span> {{ ticketData.jabatan || '—' }}</p>
+                        <p><span class="font-semibold">No HP:</span> {{ ticketData.no_hp || '—' }}</p>
+                        <p><span class="font-semibold">Email:</span> {{ ticketData.email || '—' }}</p>
+                        <p><span class="font-semibold">Status Kehadiran:</span> {{ ticketData.status_kehadiran || '—' }}</p>
+                        <p><span class="font-semibold">Tanggal Kehadiran:</span> {{ ticketData.tanggal_kehadiran || '—' }}</p>
+                       
                       </div>
-                      <div class="text-center">
-                        <span
-                          class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide"
-                          >Category</span
-                        >
-                        <p class="text-sm font-medium text-gray-900 dark:text-white">
-                          {{ ticketData.category }}
-                        </p>
-                      </div>
+                      
                     </div>
                   </div>
                 </div>
@@ -162,21 +152,16 @@
               <!-- Ticket Details -->
               <div v-if="ticketData" class="space-y-4">
                 <div class="bg-white dark:bg-gray-700 rounded-lg p-4">
-                  <h5 class="font-medium text-gray-900 dark:text-white mb-3">
-                    Ticket Details
-                  </h5>
+                  <h5 class="font-medium text-gray-900 dark:text-white mb-3">Ticket Details</h5>
                   <table class="min-w-full border border-separate border-spacing-y-2">
                     <thead>
                       <tr class="border-b">
                         <th class="px-5 py-3 text-left text-gray-900 dark:text-white">No</th>
                         <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Barcode</th>
                         <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Name</th>
-                        <th class="px-5 py-3 text-left text-gray-900 dark:text-white">
-                          Other Data
-                        </th>
-                        <th class="px-5 py-3 text-left text-gray-900 dark:text-white">
-                          Redeem Date
-                        </th>
+                        
+                        <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Other Data</th>
+                        <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Redeem Date</th>
                         <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Status</th>
                         <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Action</th>
                       </tr>
@@ -185,23 +170,14 @@
                       <!-- Primary Ticket -->
                       <tr class="border-t bg-gray-50 dark:bg-gray-800/50">
                         <td class="px-5 py-6 text-gray-900 dark:text-white">1</td>
-                        <td class="px-5 py-6 text-gray-900 dark:text-white">
-                          {{ ticketData.qrcode }}
-                        </td>
-                        <td class="px-5 py-6 text-gray-900 dark:text-white">
-                          {{ ticketData.holderName }}
-                        </td>
-                        <td class="px-5 py-6 text-gray-900 dark:text-white">
-                          {{ ticketData.otherData || '—' }}
-                        </td>
-                        <td class="px-5 py-6 text-gray-900 dark:text-white">
-                          {{ formatDate(ticketData.redeemedAt) }}
-                        </td>
+                        
+                        <td class="px-5 py-6 text-gray-900 dark:text-white">{{ ticketData.qrcode }}</td>
+                        <td class="px-5 py-6 text-gray-900 dark:text-white">{{ ticketData.holderName }}</td>
+                    
+                        <td class="px-5 py-6 text-gray-900 dark:text-white">{{ ticketData.otherData || '—' }}</td>
+                        <td class="px-5 py-6 text-gray-900 dark:text-white">{{ formatDate(ticketData.redeemedAt) }}</td>
                         <td class="px-5 py-6">
-                          <span
-                            class="px-3 py-1 text-xs font-semibold rounded-full"
-                            :class="statusBadgeClasses(ticketData.status)"
-                          >
+                          <span class="px-3 py-1 text-xs font-semibold rounded-full" :class="statusBadgeClasses(ticketData.status)">
                             {{ ticketData.status }}
                           </span>
                         </td>
@@ -212,45 +188,21 @@
                             :disabled="isRedeeming"
                             :class="buttonClass(ticketData.status)"
                           >
-                            {{
-                              isRedeeming
-                                ? 'Processing...'
-                                : ticketData.status === 'Redeemed' ||
-                                  ticketData.status === 'Recheckin'
-                                ? 'Recheckin'
-                                : 'Redeem'
-                            }}
+                            {{ isRedeeming ? 'Processing...' : (ticketData.status === 'Redeemed' || ticketData.status === 'Recheckin' ? 'Recheckin' : 'Redeem') }}
                           </button>
                           <span v-else class="text-gray-400 dark:text-gray-500">—</span>
                         </td>
                       </tr>
-
                       <!-- Related Tickets -->
-                      <tr
-                        v-for="(relatedTicket, index) in relatedTickets"
-                        :key="relatedTicket.id"
-                        class="border-t bg-gray-50 dark:bg-gray-800/50"
-                      >
-                        <td class="px-5 py-6 text-gray-900 dark:text-white">
-                          {{ index + 2 }}
-                        </td>
-                        <td class="px-5 py-6 text-gray-900 dark:text-white">
-                          {{ relatedTicket.qrcode }}
-                        </td>
-                        <td class="px-5 py-6 text-gray-900 dark:text-white">
-                          {{ relatedTicket.holderName }}
-                        </td>
-                        <td class="px-5 py-6 text-gray-900 dark:text-white">
-                          {{ relatedTicket.otherData || '—' }}
-                        </td>
-                        <td class="px-5 py-6 text-gray-900 dark:text-white">
-                          {{ formatDate(relatedTicket.redeemedAt) }}
-                        </td>
+                      <tr v-for="(relatedTicket, index) in relatedTickets" :key="relatedTicket.id" class="border-t bg-gray-50 dark:bg-gray-800/50">
+                        <td class="px-5 py-6 text-gray-900 dark:text-white">{{ index + 2 }}</td>
+                        <td class="px-5 py-6 text-gray-900 dark:text-white">{{ relatedTicket.qrcode }}</td>
+                        <td class="px-5 py-6 text-gray-900 dark:text-white">{{ relatedTicket.holderName }}</td>
+                        
+                        <td class="px-5 py-6 text-gray-900 dark:text-white">{{ relatedTicket.otherData || '—' }}</td>
+                        <td class="px-5 py-6 text-gray-900 dark:text-white">{{ formatDate(relatedTicket.redeemedAt) }}</td>
                         <td class="px-5 py-6">
-                          <span
-                            class="px-3 py-1 text-xs font-semibold rounded-full"
-                            :class="statusBadgeClasses(relatedTicket.status)"
-                          >
+                          <span class="px-3 py-1 text-xs font-semibold rounded-full" :class="statusBadgeClasses(relatedTicket.status)">
                             {{ relatedTicket.status }}
                           </span>
                         </td>
@@ -261,14 +213,7 @@
                             :disabled="isRedeeming"
                             :class="buttonClass(relatedTicket.status)"
                           >
-                            {{
-                              isRedeeming
-                                ? 'Processing...'
-                                : relatedTicket.status === 'Redeemed' ||
-                                  relatedTicket.status === 'Recheckin'
-                                ? 'Recheckin'
-                                : 'Redeem'
-                            }}
+                            {{ isRedeeming ? 'Processing...' : (relatedTicket.status === 'Redeemed' || relatedTicket.status === 'Recheckin' ? 'Recheckin' : 'Redeem') }}
                           </button>
                           <span v-else class="text-gray-400 dark:text-gray-500">—</span>
                         </td>
@@ -276,41 +221,33 @@
                     </tbody>
                   </table>
                 </div>
+
+
               </div>
 
               <!-- No Data State -->
               <div v-else class="text-center py-8">
-                <svg
-                  class="w-16 h-16 text-gray-400 mx-auto mb-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  ></path>
+                <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
                 <p class="text-gray-500 dark:text-gray-400">No ticket scanned yet</p>
-                <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">
-                  Scan a barcode or enter code manually
-                </p>
+                <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">Scan a barcode or enter code manually</p>
               </div>
             </div>
+
+            
           </div>
         </div>
       </div>
     </div>
-  </AdminLayout>
+  </UserLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library'
-import AdminLayout from '@/components/layout/AdminLayout.vue'
+import UserLayout from '@/components/layout/UserLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import BackArrowIcon from '@/icons/BackArrowIcon.vue'
 import { toast } from 'vue3-toastify'
@@ -363,7 +300,7 @@ type TicketStatus = BarcodeStatus | 'Invalid' | 'Recheckin'
 type RecentScanStatus = TicketStatus | 'Processing...'
 
 interface TicketData {
-  id: number
+id: number
   qrcode: string
   holderName: string
   eventName: string
@@ -375,6 +312,17 @@ interface TicketData {
   redeemedAt: string | null
   id_transaction: string | null
   eventCategoryId: string | null
+
+  nip?: string | null
+  ukuran_baju?: string | null
+  instansi?: string | null
+  kota?: string | null
+  email?: string | null
+  no_hp?: string | null
+  provinsi?: string | null
+  jabatan?: string | null
+  status_kehadiran?: string | null
+  tanggal_kehadiran?: string | null
 }
 
 interface RecentScan {
@@ -384,7 +332,7 @@ interface RecentScan {
 }
 
 interface BarcodeResponse {
-  id: number
+ id: number
   qrcode: string
   name: string
   other_data: string | null
@@ -397,6 +345,15 @@ interface BarcodeResponse {
   categoryName: string | null
   groupName: string | null
   id_transaction: string | null
+  ukuran_baju?: string | null
+  instansi?: string | null
+  kota?: string | null
+  email?: string | null
+  no_hp?: string | null
+  provinsi?: string | null
+  jabatan?: string | null
+  status_kehadiran?: string | null
+  tanggal_kehadiran?: string | null
 }
 
 const videoRef = ref<HTMLVideoElement>()

@@ -34,12 +34,16 @@ export default class EventsController {
       groupName: groupName ?? null,
       id_transaction: barcode.id_transaction || null,
 
-      
+
       ukuran_baju: barcode.ukuran_baju || null,
       instansi: barcode.instansi || null,
       kota: barcode.kota || null,
       email: barcode.email || null,
       no_hp: barcode.no_hp || null,
+      provinsi: barcode.provinsi || null,
+      jabatan: barcode.jabatan || null,
+      status_kehadiran: barcode.status_kehadiran || null,
+      tanggal_kehadiran: barcode.tanggal_kehadiran?.toFormat('yyyy-MM-dd') || null,
 
       statusMessage:
         status === 'Redeemed'
@@ -663,6 +667,9 @@ export default class EventsController {
           kota: row.kota || '',
           email: row.email || '',
           no_hp: row.no_hp || '',
+          provinsi: row.provinsi || null,
+          jabatan: row.jabatan || null,
+          status_kehadiran: row.status_kehadiran || null,
           tanggal_kehadiran: row.tanggal_kehadiran ? DateTime.fromFormat(row.tanggal_kehadiran, 'yyyy-MM-dd') : null,
         }
       })

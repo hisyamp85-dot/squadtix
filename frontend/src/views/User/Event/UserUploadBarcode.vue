@@ -129,8 +129,17 @@
                 </th>
                 <th class="px-5 py-3 text-left text-gray-900 dark:text-white">No</th>
                 <th class="px-5 py-3 text-left text-gray-900 dark:text-white">ID Transaction</th>
-                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Barcode</th>
+                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">QR Code</th>
                 <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Name</th>
+                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Instansi</th>
+                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Provinsi</th>
+                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Kota</th>
+                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Jabatan</th>
+                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">No HP</th>
+                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Email</th>
+                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Ukuran Baju</th>
+                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Status Kehadiran</th>
+                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Tanggal Kehadiran</th>
                 <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Other Data</th>
                 <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Redeem Date</th>
                 <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Status</th>
@@ -143,7 +152,7 @@
                 class="bg-gray-50 dark:bg-gray-800/50"
               >
                 <td
-                  colspan="9"
+                  colspan="18"
                   class="px-5 py-6 text-center text-gray-500 dark:text-gray-300"
                 >
                   No barcodes found.
@@ -178,6 +187,35 @@
                 </td>
                 <td class="px-5 py-6 text-gray-900 dark:text-white">
                   {{ barcode.name }}
+                </td>
+                 <td class="px-5 py-6 text-gray-900 dark:text-white">
+                  {{ barcode.instansi }}
+                </td>
+                <td class="px-5 py-6 text-gray-900 dark:text-white">
+                  {{ barcode.provinsi }}
+                </td>
+                <td class="px-5 py-6 text-gray-900 dark:text-white">
+                  {{ barcode.kota }}
+                </td>
+                <td class="px-5 py-6 text-gray-900 dark:text-white">
+                  {{ barcode.jabatan }}
+                </td>
+                <td class="px-5 py-6 text-gray-900 dark:text-white">
+                  {{ barcode.no_hp }}
+                </td>
+                <td class="px-5 py-6 text-gray-900 dark:text-white">
+                  {{ barcode.email }}
+                </td>
+
+
+                 <td class="px-5 py-6 text-gray-900 dark:text-white">
+                  {{ barcode.ukuran_baju }}
+                </td>
+                <td class="px-5 py-6 text-gray-900 dark:text-white">
+                  {{ barcode.status_kehadiran }}
+                </td>
+                <td class="px-5 py-6 text-gray-900 dark:text-white">
+                  {{ barcode.tanggal_kehadiran }}
                 </td>
                 <td class="px-5 py-6 text-gray-900 dark:text-white">
                   {{ barcode.other_data }}
@@ -313,6 +351,15 @@ interface Barcode {
   id_transaction: string | null
   qrcode: string
   name: string
+  instansi: string | null
+  provinsi: string | null
+  kota: string | null
+  jabatan: string | null
+  no_hp: string | null
+  email: string | null
+  ukuran_baju: string | null
+  status_kehadiran: string | null
+  tanggal_kehadiran: string | null
   other_data: string | null
   status: BarcodeStatus
   redeemed_at: string | null
@@ -582,14 +629,14 @@ const confirmDeleteMessage = computed(
 
 async function confirmDelete() {
   try {
-    const ids = selectedBarcodes.value.map((id) => parseInt(id, 10))
+    const ids = selectedBarcodes.value.map(id => parseInt(id, 10))
     const response = await api({
       method: 'DELETE',
       url: `/events/${eventId.value}/categories/${eventCategoryId.value}/qrcodes`,
-      data: { ids },
-    })
+      data: { ids }
+    }) as unknown as { data: { message: string } }
 
-    toast.success('Upload successful!')
+    toast.success(response.data.message)
     selectedBarcodes.value = []
     showDeleteModal.value = false
     await fetchBarcodes()
@@ -600,6 +647,7 @@ async function confirmDelete() {
     toast.error(`Gagal menghapus barcode: ${message}`)
   }
 }
+
 
 // ========= ADD MANUAL =========
 function addBarcodeManually() {

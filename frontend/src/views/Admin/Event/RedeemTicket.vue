@@ -136,12 +136,17 @@
                       <div class="mt-4 space-y-1 text-left">
                         <p><span class="font-semibold">Event:</span> {{ ticketData.eventName || '—' }}</p>
                         <p><span class="font-semibold">Category:</span> {{ ticketData.category || '—' }}</p>
-                        <p><span class="font-semibold">NIP:</span> {{ ticketData.nip || '—' }}</p>
+                        
                         <p><span class="font-semibold">Ukuran Baju:</span> {{ ticketData.ukuran_baju || '—' }}</p>
                         <p><span class="font-semibold">Instansi:</span> {{ ticketData.instansi || '—' }}</p>
+                        <p><span class="font-semibold">Provinsi:</span> {{ ticketData.provinsi || '—' }}</p>
                         <p><span class="font-semibold">Kota:</span> {{ ticketData.kota || '—' }}</p>
-                        <p><span class="font-semibold">Email:</span> {{ ticketData.email || '—' }}</p>
+                        <p><span class="font-semibold">Jabatan:</span> {{ ticketData.jabatan || '—' }}</p>
                         <p><span class="font-semibold">No HP:</span> {{ ticketData.no_hp || '—' }}</p>
+                        <p><span class="font-semibold">Email:</span> {{ ticketData.email || '—' }}</p>
+                        <p><span class="font-semibold">Status Kehadiran:</span> {{ ticketData.status_kehadiran || '—' }}</p>
+                        <p><span class="font-semibold">Tanggal Kehadiran:</span> {{ ticketData.tanggal_kehadiran || '—' }}</p>
+                       
                       </div>
                       
                     </div>
@@ -286,6 +291,10 @@ interface TicketData {
   kota?: string | null
   email?: string | null
   no_hp?: string | null
+  provinsi?: string | null
+  jabatan?: string | null
+  status_kehadiran?: string | null
+  tanggal_kehadiran?: string | null
 }
 
 interface RecentScan {
@@ -308,6 +317,15 @@ interface BarcodeResponse {
   categoryName: string | null
   groupName: string | null
   id_transaction: string | null
+  ukuran_baju?: string | null
+  instansi?: string | null
+  kota?: string | null
+  email?: string | null
+  no_hp?: string | null
+  provinsi?: string | null
+  jabatan?: string | null
+  status_kehadiran?: string | null
+  tanggal_kehadiran?: string | null
 }
 
 const videoRef = ref<HTMLVideoElement>()
@@ -471,16 +489,15 @@ const mapBarcodeResponse = (barcode: BarcodeResponse): TicketData => {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     nip: (barcode as any).nip || null,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ukuran_baju: (barcode as any).ukuran_baju || null,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    instansi: (barcode as any).instansi || null,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    kota: (barcode as any).kota || null,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    email: (barcode as any).email || null,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    no_hp: (barcode as any).no_hp || null,
+    ukuran_baju: barcode.ukuran_baju || null,
+    instansi: barcode.instansi || null,
+    kota: barcode.kota || null,
+    email: barcode.email || null,
+    no_hp: barcode.no_hp || null,
+    provinsi: barcode.provinsi || null,
+    jabatan: barcode.jabatan || null,
+    status_kehadiran: barcode.status_kehadiran || null,
+    tanggal_kehadiran: barcode.tanggal_kehadiran || null,
   }
 }
 
