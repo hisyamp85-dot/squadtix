@@ -120,13 +120,10 @@
                   {{ category.name }}
                 </td>
                 <td class="px-5 py-6 text-gray-900 dark:text-white">
-                  <input
-                    type="number"
-                    min="0"
-                    v-model.number="entryAmounts[category.id]"
-                    @input="onEntryAmountInput(category)"
-                    class="w-20 p-1 border rounded text-center dark:bg-gray-700 dark:text-white"
-                  />
+                  <!-- READ-ONLY, nilai dari backend -->
+                  <span class="inline-block min-w-[3rem] text-center">
+                    {{ entryAmounts[category.id] ?? 0 }}
+                  </span>
                 </td>
                 <td class="px-5 py-6">
                   <div class="flex items-center gap-2">
@@ -312,6 +309,7 @@ interface EventForm extends HistoryState {
 interface Category {
   name: string
   id: string
+  entry_amount?: number
 }
 
 const totalQrcodeCount = ref(0)
@@ -366,15 +364,6 @@ const numericEntriesPerPage = computed(() => {
   const n = Number(entriesPerPage.value)
   return Number.isNaN(n) || n <= 0 ? 10 : n
 })
-
-const onEntryAmountInput = (category: Category) => {
-  if (!event.value) return
-
-  const eventId = event.value.id_event
-  const amount = entryAmounts.value[category.id] ?? 0
-  const key = `entryAmount:${eventId}:${category.id}`
-  localStorage.setItem(key, String(amount))
-}
 
 const toggleDropdown = (index: number) => {
   openDropdownIndex.value = openDropdownIndex.value === index ? null : index
@@ -445,18 +434,17 @@ const fetchCategories = async () => {
 
     const categories = (response.data as { categories: Category[] }).categories
 
+    // simpan full categories (sudah ada entry_amount dari backend)
     categoryObjects.value = [...categories]
+
     if (event.value) {
       event.value.categories = categories.map((c) => c.name)
     }
 
+    // isi entryAmounts dari backend, BUKAN localStorage
     entryAmounts.value = {}
-    const eventId = event.value?.id_event ?? eventIdParam.value
-
     categories.forEach((category) => {
-      const key = `entryAmount:${eventId}:${category.id}`
-      const saved = localStorage.getItem(key)
-      entryAmounts.value[category.id] = saved ? Number(saved) : 0
+      entryAmounts.value[category.id] = category.entry_amount ?? 0
     })
 
     if (currentPage.value > totalPages.value) {
@@ -677,7 +665,6 @@ const goBack = () => {
     router.push('/login')
   }
 }
-
 
 const goToRedeem = () => {
   const uid = userId.value

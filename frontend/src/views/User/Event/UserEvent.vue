@@ -18,10 +18,11 @@
         <ProfileCard />
 
         <!-- TOP BAR: ADD BUTTON + SHOW ENTRIES -->
-	 <div
+        <div
           class="flex flex-wrap items-center justify-between mb-4 pt-4 pr-4 pl-4 gap-3"
         >
-          <div class="flex items-center gap-2">
+          <!-- TOMBOL ADD NEW EVENT HANYA UNTUK ROLE YANG BOLEH -->
+          <div class="flex items-center gap-2" v-if="canCreateEvent">
             <Button
               class="btn btn-primary"
               size="sm"
@@ -31,8 +32,8 @@
             >
               Add New Event
             </Button>
-          </div>	
-     
+          </div>
+
           <div class="flex items-center gap-2">
             <label for="entries" class="text-gray-700 dark:text-gray-300">Show</label>
             <select
@@ -181,7 +182,7 @@
           </div>
         </div>
 
-        <!-- MODALS (User juga bisa add/edit/delete) -->
+        <!-- MODALS -->
         <AddNewEventModal
           :show="showAddForm"
           :initial-form="form"
@@ -214,9 +215,8 @@ import DeatailMasterEvent from '@/views/Admin/Event/DeatailMasterEvent.vue'
 import ProfileCard from '@/components/common/ProfileCard.vue'
 import api from '@/lib/axios'
 import { toast } from 'vue3-toastify'
-import Button from "@/components/ui/Button.vue";
+import Button from '@/components/ui/Button.vue'
 
-// ======================== USER DARI LOCAL STORAGE ========================
 type Role = 'Admin' | 'User' | 'Redemption' | 'Scan Wristband' | string
 
 interface StoredUser {
@@ -249,6 +249,15 @@ const userId = computed<number | undefined>(() => {
   }
   if (typeof id === 'number') return id
   return undefined
+})
+
+// 👉 HANYA ROLE TERTENTU BOLEH CREATE EVENT (MISAL: Admin)
+const canCreateEvent = computed(() => {
+  const role = storedUser.value?.role
+  // kalau mau bolehin role lain tinggal tambahkan di sini
+  return role === 'Admin'
+  // contoh kalau mau Admin & Redemption bisa:
+  // return role === 'Admin' || role === 'Redemption'
 })
 
 // ======================== BREADCRUMBS (VERSI USER) ========================
@@ -333,6 +342,12 @@ const pageNumbers = computed(() => {
 // ======================== NAV & ACTIONS ========================
 
 const openAddForm = () => {
+  // safeguard: kalau button somehow muncul tapi role tidak boleh
+  if (!canCreateEvent.value) {
+    toast.error('You are not allowed to create events.')
+    return
+  }
+
   if (!userId.value) {
     toast.error('User not found. Please login again.')
     router.push('/login')
@@ -386,6 +401,11 @@ function isAxiosError(error: unknown): error is { response?: { data?: unknown };
 
 const handleAddEvent = async (formData: EventForm) => {
   try {
+    if (!canCreateEvent.value) {
+      toast.error('You are not allowed to create events.')
+      return
+    }
+
     if (!userId.value) {
       toast.error('User not found. Please login again.')
       router.push('/login')

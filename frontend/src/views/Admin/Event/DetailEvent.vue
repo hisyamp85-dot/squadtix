@@ -316,6 +316,7 @@ interface EventForm extends HistoryState {
 interface Category {
   name: string
   id: string
+  entry_amount?: number
 }
 
 const totalQrcodeCount = ref(0)
@@ -347,14 +348,27 @@ const numericEntriesPerPage = computed(() => {
   return Number.isNaN(n) || n <= 0 ? 10 : n
 })
 
-const onEntryAmountInput = (category: Category) => {
+const onEntryAmountInput = async (category: Category) => {
   if (!event.value) return
 
   const eventId = event.value.id_event
   const amount = entryAmounts.value[category.id] ?? 0
-  const key = `entryAmount:${eventId}:${category.id}`
-  localStorage.setItem(key, String(amount))
+
+  try {
+    await api.put(
+      `/events/${eventId}/categories/${category.id}/entry-amount`,
+      { entry_amount: amount }
+    )
+    // optional: kasih notifikasi kalau mau
+    // toast.success('Entry amount updated')
+  } catch (error) {
+    console.error('Failed to update entry amount:', error)
+    toast.error('Failed to update entry amount')
+    // balik ke data server biar sinkron lagi (opsional)
+    await fetchCategories()
+  }
 }
+
 
 const toggleDropdown = (index: number) => {
   openDropdownIndex.value = openDropdownIndex.value === index ? null : index
@@ -426,14 +440,12 @@ const fetchCategories = async () => {
     categoryObjects.value = [...categories]
     event.value.categories = categories.map(c => c.name)
 
-    entryAmounts.value = {}
-    const eventId = event.value.id_event
+entryAmounts.value = {}
 
-    categories.forEach(category => {
-      const key = `entryAmount:${eventId}:${category.id}`
-      const saved = localStorage.getItem(key)
-      entryAmounts.value[category.id] = saved ? Number(saved) : 0
-    })
+categories.forEach(category => {
+  entryAmounts.value[category.id] = category.entry_amount ?? 0
+})
+
 
     // pastikan currentPage masih valid
     if (currentPage.value > totalPages.value) {
