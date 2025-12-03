@@ -518,6 +518,15 @@ const mapBarcodeResponse = (barcode: BarcodeResponse): TicketData => {
     redeemedAt: barcode.redeemed_at,
     id_transaction: barcode.id_transaction || null,
     eventCategoryId: barcode.event_category_id || null,
+    ukuran_baju: barcode.ukuran_baju || null,
+    instansi: barcode.instansi || null,
+    kota: barcode.kota || null,
+    email: barcode.email || null,
+    no_hp: barcode.no_hp || null,
+    provinsi: barcode.provinsi || null,
+    jabatan: barcode.jabatan || null,
+    status_kehadiran: barcode.status_kehadiran || null,
+    tanggal_kehadiran: barcode.tanggal_kehadiran || null,
   }
 }
 
