@@ -7,7 +7,7 @@
       'border border-slate-200/70 dark:border-slate-700/60',
       'shadow-xl rounded-3xl lg:rounded-3xl',
       'transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]',
-      'z-[9999]',
+      'z-[10000]',
       {
         // Lebar sidebar di layar besar
         'lg:w-[280px]': isExpanded || isMobileOpen || isHovered,
