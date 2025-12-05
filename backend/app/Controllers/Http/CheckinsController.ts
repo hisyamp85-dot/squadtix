@@ -4,6 +4,9 @@ import CheckinLog from 'App/Models/CheckinLog'
 import Event from 'App/Models/Event'
 import { DateTime } from 'luxon'
 
+// 🔥 ambil limit entry dari file JSON (tmp) seperti di EventsController
+import EntryAmountStore from 'App/Services/EntryAmountStore'
+
 export default class CheckinsController {
   public async scan({ request, response }: HttpContextContract) {
     const qrcodeInput: string | undefined = request.input('qrcode')
@@ -21,11 +24,12 @@ export default class CheckinsController {
     const typeScan: 'CheckIn' | 'CheckOut' =
       (request.input('typeScan') || 'CheckIn') as 'CheckIn' | 'CheckOut'
 
-    const entryAmountRaw = request.input('entryAmount')
-    const entryAmount: number | null =
-      typeof entryAmountRaw !== 'undefined' && entryAmountRaw !== null && entryAmountRaw !== ''
-        ? Number(entryAmountRaw)
-        : null
+    // ❌ entryAmount TIDAK diambil lagi dari request
+    // const entryAmountRaw = request.input('entryAmount')
+    // const entryAmount: number | null =
+    //   typeof entryAmountRaw !== 'undefined' && entryAmountRaw !== null && entryAmountRaw !== ''
+    //     ? Number(entryAmountRaw)
+    //     : null
 
     if (!qrcodeInput || !qrcodeInput.trim()) {
       return response.badRequest({ message: 'qrcode is required' })
@@ -53,7 +57,7 @@ export default class CheckinsController {
       // Ambil event utk cek kepemilikan (kalau userIdFilter dikirim)
       const eventQuery = Event.query().where('eventCategoryId', barcode.event_category_id)
 
-      // ⚠️ Ganti 'user_id' dengan kolom yang kamu pakai di tabel events
+      // ⚠️ Ganti 'user_id' dengan kolom yang kamu pakai di tabel events jika berbeda
       if (userIdFilter) {
         eventQuery.andWhere('user_id', userIdFilter)
       }
@@ -67,13 +71,33 @@ export default class CheckinsController {
         })
       }
 
+      // ==============================
+      //  AMBIL LIMIT DARI JSON STORE
+      // ==============================
+      let entryLimit: number | null = null
+
+      try {
+        // getEventMap(eventId) → { [eventCategoryId]: number }
+        const entryMap = await EntryAmountStore.getEventMap(String(barcode.event_id))
+        const rawLimit = entryMap[String(barcode.event_category_id)]
+
+        if (typeof rawLimit === 'number' && !Number.isNaN(rawLimit) && rawLimit > 0) {
+          entryLimit = rawLimit
+        } else {
+          entryLimit = null // null = tidak ada limit (unlimited)
+        }
+      } catch (e) {
+        console.error('Failed to load entry amount from EntryAmountStore:', e)
+        entryLimit = null
+      }
+
       // Log terakhir (untuk cek status sekarang)
       const lastLog = await CheckinLog.query()
         .where('category_qrcode_id', barcode.id)
         .orderBy('scanned_at', 'desc')
         .first()
 
-      // Hitung total entry (jumlah sesi check-in yang pernah dibuat untuk barcode ini)
+      // Hitung total entry (jumlah sesi check-in/out yang pernah dibuat untuk barcode ini)
       const countRow = await CheckinLog.query()
         .where('category_qrcode_id', barcode.id)
         .count('* as total')
@@ -85,15 +109,14 @@ export default class CheckinsController {
       //  BRANCH CHECK - IN  (typeScan = CheckIn)
       // =====================================
       if (typeScan === 'CheckIn') {
-        // 1) Cek limit entryAmount (kalau dikirim & > 0)
-        if (entryAmount !== null && !Number.isNaN(entryAmount) && entryAmount > 0) {
-          if (totalEntries >= entryAmount) {
-            return response.badRequest({
-              message: `Entry limit reached (${entryAmount}x).`,
-              entryUsed: totalEntries,
-              entryLimit: entryAmount,
-            })
-          }
+        // 1) Cek limit entryLimit (kalau di JSON diset & > 0)
+        //    Contoh: di JSON = 3  → kalau totalEntries >= 3  → blok
+        if (entryLimit !== null && totalEntries >= entryLimit) {
+          return response.badRequest({
+            message: `Entry limit reached (${entryLimit}x).`,
+            entryUsed: totalEntries,
+            entryLimit,
+          })
         }
 
         // 2) Cek status terakhir: kalau masih Checked-in → dianggap belum keluar
@@ -115,7 +138,7 @@ export default class CheckinsController {
               event_category_id: barcode.event_category_id,
             },
             entryUsed: totalEntries,
-            entryLimit: entryAmount,
+            entryLimit,
           })
         }
 
@@ -132,14 +155,14 @@ export default class CheckinsController {
 
         const entryUsed = totalEntries + 1
         const successMessage =
-          entryAmount !== null && entryAmount > 0
-            ? `Check-in successful (Entry used ${entryUsed}/${entryAmount})`
+          entryLimit !== null && entryLimit > 0
+            ? `Check-in successful (Entry used ${entryUsed}/${entryLimit})`
             : 'Check-in successful'
 
         return response.ok({
           message: successMessage,
           entryUsed,
-          entryLimit: entryAmount,
+          entryLimit,
           barcode: {
             id: barcode.id,
             qrcode: barcode.qrcode,
@@ -168,7 +191,7 @@ export default class CheckinsController {
         return response.badRequest({
           message: 'Barcode has not checked in yet',
           entryUsed: totalEntries,
-          entryLimit: entryAmount,
+          entryLimit,
         })
       }
 
@@ -185,7 +208,7 @@ export default class CheckinsController {
             checkout_by: lastLog.checkoutBy ?? null,
           },
           entryUsed: totalEntries,
-          entryLimit: entryAmount,
+          entryLimit,
         })
       }
 
@@ -200,7 +223,7 @@ export default class CheckinsController {
       return response.ok({
         message: 'Check-out successful',
         entryUsed: totalEntries,
-        entryLimit: entryAmount,
+        entryLimit,
         barcode: {
           id: barcode.id,
           qrcode: barcode.qrcode,

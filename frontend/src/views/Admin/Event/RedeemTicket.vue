@@ -7,27 +7,25 @@
       { text: 'Redeem Ticket', active: true }
     ]" />
 
-    <div class="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12">
+    <div
+      class="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12"
+    >
       <div class="flex items-center gap-4 mb-4">
-          <button @click="goBack" class="px-4 py-2 flex items-center gap-2">
+        <button @click="goBack" class="px-4 py-2 flex items-center gap-2">
           <BackArrowIcon class="text-gray-900 dark:text-white" />
-
         </button>
-          <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">Redeem Ticket</h3>
-        </div>
-      <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">Redeem Ticket</h3>
+      </div>
 
-        
-
+      <div
+        class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6"
+      >
         <!-- Main Content -->
         <div class="grid grid-cols-1 gap-8">
-
           <!-- Scanner Section -->
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
             <!-- Manual Input -->
             <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-6">
-
               <div class="space-y-4">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -51,8 +49,11 @@
               </div>
             </div>
 
+            <!-- Camera Scanner -->
             <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-6">
-              <h4 class="text-md font-medium text-gray-900 dark:text-white mb-4">Barcode Scanner</h4>
+              <h4 class="text-md font-medium text-gray-900 dark:text-white mb-4">
+                Barcode Scanner
+              </h4>
 
               <!-- Camera Preview -->
               <div class="relative mb-4">
@@ -67,21 +68,33 @@
                 <!-- Scanner Overlay -->
                 <div class="absolute inset-0 pointer-events-none">
                   <div class="relative w-full h-full">
-                    <!-- Corner markers -->
-                    <div class="absolute top-4 left-4 w-8 h-8 border-l-4 border-t-4 border-blue-500 rounded-tl-lg"></div>
-                    <div class="absolute top-4 right-4 w-8 h-8 border-r-4 border-t-4 border-blue-500 rounded-tr-lg"></div>
-                    <div class="absolute bottom-4 left-4 w-8 h-8 border-l-4 border-b-4 border-blue-500 rounded-bl-lg"></div>
-                    <div class="absolute bottom-4 right-4 w-8 h-8 border-r-4 border-b-4 border-blue-500 rounded-br-lg"></div>
-
-                    <!-- Center scanning line -->
-                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3/4 h-0.5 bg-blue-500 animate-pulse"></div>
+                    <div
+                      class="absolute top-4 left-4 w-8 h-8 border-l-4 border-t-4 border-blue-500 rounded-tl-lg"
+                    ></div>
+                    <div
+                      class="absolute top-4 right-4 w-8 h-8 border-r-4 border-t-4 border-blue-500 rounded-tr-lg"
+                    ></div>
+                    <div
+                      class="absolute bottom-4 left-4 w-8 h-8 border-l-4 border-b-4 border-blue-500 rounded-bl-lg"
+                    ></div>
+                    <div
+                      class="absolute bottom-4 right-4 w-8 h-8 border-r-4 border-b-4 border-blue-500 rounded-br-lg"
+                    ></div>
+                    <div
+                      class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3/4 h-0.5 bg-blue-500 animate-pulse"
+                    ></div>
                   </div>
                 </div>
 
                 <!-- Loading overlay -->
-                <div v-if="isScanning" class="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
+                <div
+                  v-if="isScanning"
+                  class="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center"
+                >
                   <div class="text-white text-center">
-                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
+                    <div
+                      class="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"
+                    ></div>
                     <p class="text-sm">Initializing camera...</p>
                   </div>
                 </div>
@@ -95,7 +108,12 @@
                   class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    ></path>
                   </svg>
                   {{ isScanning ? 'Scanning...' : 'Start Scan' }}
                 </button>
@@ -109,34 +127,39 @@
                 </button>
               </div>
             </div>
-
           </div>
 
           <!-- Ticket Information Section -->
           <div class="space-y-6">
             <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-6">
-              <h4 class="text-md font-medium text-gray-900 dark:text-white mb-4">Ticket Information</h4>
+              <h4 class="text-md font-medium text-gray-900 dark:text-white mb-4">
+                Ticket Information
+              </h4>
 
               <!-- Scanned Code Display -->
               <div v-if="scannedCode" class="mb-6">
                 <div class="bg-white dark:bg-gray-700 rounded-lg p-4 border-l-4 border-blue-500">
                   <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Scanned Code:</span>
-                    <span class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded">
+                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      Scanned Code:
+                    </span>
+                    <span
+                      class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded"
+                    >
                       {{ scanMethod }}
                     </span>
                   </div>
-                  <p class="text-lg font-mono font-bold text-gray-900 dark:text-white break-all">
+                  <p
+                    class="text-lg font-mono font-bold text-gray-900 dark:text-white break-all"
+                  >
                     {{ scannedCode }}
                   </p>
-                  <!-- Event and Category Information -->
+
                   <div v-if="ticketData" class="mt-4 space-y-2">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     
                       <div class="mt-4 space-y-1 text-left">
                         <p><span class="font-semibold">Event:</span> {{ ticketData.eventName || '—' }}</p>
                         <p><span class="font-semibold">Category:</span> {{ ticketData.category || '—' }}</p>
-                        
                         <p><span class="font-semibold">Ukuran Baju:</span> {{ ticketData.ukuran_baju || '—' }}</p>
                         <p><span class="font-semibold">Instansi:</span> {{ ticketData.instansi || '—' }}</p>
                         <p><span class="font-semibold">Provinsi:</span> {{ ticketData.provinsi || '—' }}</p>
@@ -144,17 +167,25 @@
                         <p><span class="font-semibold">Jabatan:</span> {{ ticketData.jabatan || '—' }}</p>
                         <p><span class="font-semibold">No HP:</span> {{ ticketData.no_hp || '—' }}</p>
                         <p><span class="font-semibold">Email:</span> {{ ticketData.email || '—' }}</p>
-                        <p><span class="font-semibold">Status Kehadiran:</span> {{ ticketData.status_kehadiran || '—' }}</p>
-                        <p><span class="font-semibold">Tanggal Kehadiran:</span> {{ ticketData.tanggal_kehadiran || '—' }}</p>
-                       
+                        <p>
+                          <span class="font-semibold">Status Kehadiran:</span>
+                          {{ ticketData.status_kehadiran || '—' }}
+                        </p>
+                        <p>
+                          <span class="font-semibold">Tanggal Kehadiran:</span>
+                          {{ ticketData.tanggal_kehadiran || '—' }}
+                        </p>
+                        <p v-if="ticketEntryAmount !== null">
+                          <span class="font-semibold">Entry Limit:</span>
+                          {{ ticketEntryAmount }}
+                        </p>
                       </div>
-                      
                     </div>
                   </div>
                 </div>
               </div>
 
-              <!-- Ticket Details -->
+              <!-- Ticket Details Table -->
               <div v-if="ticketData" class="space-y-4">
                 <div class="bg-white dark:bg-gray-700 rounded-lg p-4">
                   <h5 class="font-medium text-gray-900 dark:text-white mb-3">Ticket Details</h5>
@@ -164,7 +195,6 @@
                         <th class="px-5 py-3 text-left text-gray-900 dark:text-white">No</th>
                         <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Barcode</th>
                         <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Name</th>
-                        
                         <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Other Data</th>
                         <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Redeem Date</th>
                         <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Status</th>
@@ -175,14 +205,23 @@
                       <!-- Primary Ticket -->
                       <tr class="border-t bg-gray-50 dark:bg-gray-800/50">
                         <td class="px-5 py-6 text-gray-900 dark:text-white">1</td>
-                        
-                        <td class="px-5 py-6 text-gray-900 dark:text-white">{{ ticketData.qrcode }}</td>
-                        <td class="px-5 py-6 text-gray-900 dark:text-white">{{ ticketData.holderName }}</td>
-                    
-                        <td class="px-5 py-6 text-gray-900 dark:text-white">{{ ticketData.otherData || '—' }}</td>
-                        <td class="px-5 py-6 text-gray-900 dark:text-white">{{ formatDate(ticketData.redeemedAt) }}</td>
+                        <td class="px-5 py-6 text-gray-900 dark:text-white">
+                          {{ ticketData.qrcode }}
+                        </td>
+                        <td class="px-5 py-6 text-gray-900 dark:text-white">
+                          {{ ticketData.holderName }}
+                        </td>
+                        <td class="px-5 py-6 text-gray-900 dark:text-white">
+                          {{ ticketData.otherData || '—' }}
+                        </td>
+                        <td class="px-5 py-6 text-gray-900 dark:text-white">
+                          {{ formatDate(ticketData.redeemedAt) }}
+                        </td>
                         <td class="px-5 py-6">
-                          <span class="px-3 py-1 text-xs font-semibold rounded-full" :class="statusBadgeClasses(ticketData.status)">
+                          <span
+                            class="px-3 py-1 text-xs font-semibold rounded-full"
+                            :class="statusBadgeClasses(ticketData.status)"
+                          >
                             {{ ticketData.status }}
                           </span>
                         </td>
@@ -193,21 +232,44 @@
                             :disabled="isRedeeming"
                             :class="buttonClass(ticketData.status)"
                           >
-                            {{ isRedeeming ? 'Processing...' : (ticketData.status === 'Redeemed' || ticketData.status === 'Recheckin' ? 'Recheckin' : 'Redeem') }}
+                            {{
+                              isRedeeming
+                                ? 'Processing...'
+                                : ticketData.status === 'Recheckin'
+                                ? 'Recheckin'
+                                : 'Redeem'
+                            }}
                           </button>
                           <span v-else class="text-gray-400 dark:text-gray-500">—</span>
                         </td>
                       </tr>
+
                       <!-- Related Tickets -->
-                      <tr v-for="(relatedTicket, index) in relatedTickets" :key="relatedTicket.id" class="border-t bg-gray-50 dark:bg-gray-800/50">
-                        <td class="px-5 py-6 text-gray-900 dark:text-white">{{ index + 2 }}</td>
-                        <td class="px-5 py-6 text-gray-900 dark:text-white">{{ relatedTicket.qrcode }}</td>
-                        <td class="px-5 py-6 text-gray-900 dark:text-white">{{ relatedTicket.holderName }}</td>
-                        
-                        <td class="px-5 py-6 text-gray-900 dark:text-white">{{ relatedTicket.otherData || '—' }}</td>
-                        <td class="px-5 py-6 text-gray-900 dark:text-white">{{ formatDate(relatedTicket.redeemedAt) }}</td>
+                      <tr
+                        v-for="(relatedTicket, index) in relatedTickets"
+                        :key="relatedTicket.id"
+                        class="border-t bg-gray-50 dark:bg-gray-800/50"
+                      >
+                        <td class="px-5 py-6 text-gray-900 dark:text-white">
+                          {{ index + 2 }}
+                        </td>
+                        <td class="px-5 py-6 text-gray-900 dark:text-white">
+                          {{ relatedTicket.qrcode }}
+                        </td>
+                        <td class="px-5 py-6 text-gray-900 dark:text-white">
+                          {{ relatedTicket.holderName }}
+                        </td>
+                        <td class="px-5 py-6 text-gray-900 dark:text-white">
+                          {{ relatedTicket.otherData || '—' }}
+                        </td>
+                        <td class="px-5 py-6 text-gray-900 dark:text-white">
+                          {{ formatDate(relatedTicket.redeemedAt) }}
+                        </td>
                         <td class="px-5 py-6">
-                          <span class="px-3 py-1 text-xs font-semibold rounded-full" :class="statusBadgeClasses(relatedTicket.status)">
+                          <span
+                            class="px-3 py-1 text-xs font-semibold rounded-full"
+                            :class="statusBadgeClasses(relatedTicket.status)"
+                          >
                             {{ relatedTicket.status }}
                           </span>
                         </td>
@@ -218,7 +280,13 @@
                             :disabled="isRedeeming"
                             :class="buttonClass(relatedTicket.status)"
                           >
-                            {{ isRedeeming ? 'Processing...' : (relatedTicket.status === 'Redeemed' || relatedTicket.status === 'Recheckin' ? 'Recheckin' : 'Redeem') }}
+                            {{
+                              isRedeeming
+                                ? 'Processing...'
+                                : relatedTicket.status === 'Recheckin'
+                                ? 'Recheckin'
+                                : 'Redeem'
+                            }}
                           </button>
                           <span v-else class="text-gray-400 dark:text-gray-500">—</span>
                         </td>
@@ -226,21 +294,29 @@
                     </tbody>
                   </table>
                 </div>
-
-
               </div>
 
               <!-- No Data State -->
               <div v-else class="text-center py-8">
-                <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                <svg
+                  class="w-16 h-16 text-gray-400 mx-auto mb-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  ></path>
                 </svg>
                 <p class="text-gray-500 dark:text-gray-400">No ticket scanned yet</p>
-                <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">Scan a barcode or enter code manually</p>
+                <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                  Scan a barcode or enter code manually
+                </p>
               </div>
             </div>
-
-            
           </div>
         </div>
       </div>
@@ -317,6 +393,7 @@ interface BarcodeResponse {
   categoryName: string | null
   groupName: string | null
   id_transaction: string | null
+
   ukuran_baju?: string | null
   instansi?: string | null
   kota?: string | null
@@ -326,6 +403,13 @@ interface BarcodeResponse {
   jabatan?: string | null
   status_kehadiran?: string | null
   tanggal_kehadiran?: string | null
+}
+
+// Response kategori: GET /events/:eventId/categories
+interface CategoryEntry {
+  id: string
+  name: string
+  entry_amount: number
 }
 
 const videoRef = ref<HTMLVideoElement>()
@@ -341,14 +425,45 @@ const recentScans = ref<RecentScan[]>([])
 
 const router = useRouter()
 const route = useRoute()
-const eventId = computed(() => route.query.eventId as string || '')
+const eventId = computed(() => (route.query.eventId as string) || '')
 
-// ========== Helper navigasi ==========
+// Map entry_amount dari backend: { eventCategoryId: entry_amount }
+const categoryEntryMap = ref<Record<string, number>>({})
+const loadingEntryAmount = ref(false)
+
+// ========== Navigasi ==========
 const goBack = () => {
   if (eventId.value) {
     router.push({ name: 'DetailEvent', params: { id: eventId.value } })
   } else {
     router.push({ name: 'AdminEvent' })
+  }
+}
+
+// ========== Ambil entry_amount dari backend ==========
+const fetchEntryAmounts = async () => {
+  if (!eventId.value) return
+  loadingEntryAmount.value = true
+  try {
+    const { data } = await api.get<{ categories: CategoryEntry[] }>(
+      `/events/${eventId.value}/categories`
+    )
+
+    const categories = data.categories || []
+    const map: Record<string, number> = {}
+
+    categories.forEach((cat) => {
+      const n = Number(cat.entry_amount)
+      if (!Number.isNaN(n) && n > 0) {
+        map[String(cat.id)] = n
+      }
+    })
+
+    categoryEntryMap.value = map
+  } catch (error) {
+    console.error('Failed to fetch entry amounts:', error)
+  } finally {
+    loadingEntryAmount.value = false
   }
 }
 
@@ -390,20 +505,20 @@ const stopScanning = () => {
     codeReader.reset()
     const stream = videoRef.value.srcObject as MediaStream
     if (stream) {
-      stream.getTracks().forEach(track => track.stop())
+      stream.getTracks().forEach((track) => track.stop())
     }
   }
   isScanning.value = false
 }
 
-// ========== Proses kode (scan / manual) ==========
+// ========== Proses kode ==========
 const processScannedCode = async (code: string) => {
   if (!code.trim()) return
 
   recentScans.value.unshift({
     code,
     timestamp: new Date().toLocaleTimeString(),
-    status: 'Processing...'
+    status: 'Processing...',
   })
 
   if (recentScans.value.length > 5) {
@@ -423,7 +538,7 @@ const processManualCode = async () => {
 }
 
 const updateRecentScanStatus = (code: string, status: RecentScanStatus) => {
-  const recentScan = recentScans.value.find(scan => scan.code === code)
+  const recentScan = recentScans.value.find((scan) => scan.code === code)
   if (recentScan) {
     recentScan.status = status
   }
@@ -485,7 +600,7 @@ const mapBarcodeResponse = (barcode: BarcodeResponse): TicketData => {
     otherData: barcode.other_data,
     redeemedAt: barcode.redeemed_at,
     id_transaction: barcode.id_transaction || null,
-    eventCategoryId: barcode.event_category_id || null, // 👈 ini dipakai untuk entryAmount
+    eventCategoryId: barcode.event_category_id || null,
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     nip: (barcode as any).nip || null,
@@ -505,23 +620,17 @@ const mapBarcodesResponse = (barcodes: BarcodeResponse[]): TicketData[] => {
   return barcodes.map(mapBarcodeResponse)
 }
 
-// ========== Entry Amount & Redeem Counter (localStorage) ==========
-// Ambil entryAmount per kategori event dari localStorage
+// ========== Entry Amount (BACKEND) & Redeem Counter (localStorage) ==========
+
+// entry_amount dari backend berdasarkan eventCategoryId
 const getEntryAmountForTicket = (ticket: TicketData | null): number | null => {
-  if (!ticket || !ticket.eventCategoryId || !eventId.value) return null
-
-  // key yang dipakai di Event Detail
-  const key = `entryAmount:${eventId.value}:${ticket.eventCategoryId}`
-  const saved = localStorage.getItem(key)
-  if (!saved) return null
-
-  const n = Number(saved)
-  if (Number.isNaN(n) || n <= 0) return null
-
+  if (!ticket || !ticket.eventCategoryId) return null
+  const n = categoryEntryMap.value[ticket.eventCategoryId] ?? 0
+  if (!n || n <= 0) return null
   return n
 }
 
-// Key untuk hitung berapa kali barcode ini sudah di-redeem di browser ini
+// key untuk counter per barcode
 const getRedeemCountKey = (ticket: TicketData): string => {
   const ev = eventId.value || 'noEvent'
   const cat = ticket.eventCategoryId || 'noCat'
@@ -541,36 +650,37 @@ const setRedeemCount = (ticket: TicketData, count: number) => {
   localStorage.setItem(key, String(count))
 }
 
-// Sesuaikan status ticket dengan batas entryAmount
-const normalizeTicketStatusWithLimit = (ticket: TicketData): TicketData => {
-  // Jika status backend sudah definitive (Redeemed atau Recheckin), gunakan status tersebut
-  if (ticket.status === 'Redeemed' || ticket.status === 'Recheckin') {
-    return ticket
-  }
-
+// Tambahkan info limit + adjust status untuk multi entry
+const attachLimitMessage = (
+  ticket: TicketData,
+  usedOverride?: number | null
+): TicketData => {
   const entryAmount = getEntryAmountForTicket(ticket)
-  if (!entryAmount) {
-    // Tidak ada limit => pakai status asli backend
-    return ticket
-  }
+  if (!entryAmount) return ticket
 
-  const used = getRedeemCount(ticket)
+  const used = usedOverride ?? getRedeemCount(ticket)
 
+  let newStatus = ticket.status
+
+  // Kalau sudah habis, paksa status jadi Redeemed final
   if (used >= entryAmount) {
-    return {
-      ...ticket,
-      status: 'Redeemed',
-      statusMessage: `Entry limit reached (${entryAmount}x).`,
+    newStatus = 'Redeemed'
+  } else {
+    // Masih ada jatah: kalau backend kasih 'Redeemed', kita ganti ke Recheckin
+    if (ticket.status === 'Redeemed') {
+      newStatus = 'Recheckin'
     }
   }
 
-  // Masih boleh redeem → treat sebagai Pending di UI
   return {
     ...ticket,
-    status: 'Pending',
+    status: newStatus,
     statusMessage: `You have used ${used}/${entryAmount} entries.`,
   }
 }
+
+// buat ditampilkan di info
+const ticketEntryAmount = computed(() => getEntryAmountForTicket(ticketData.value))
 
 // ========== VALIDATE TICKET ==========
 const validateTicket = async (code: string) => {
@@ -586,28 +696,23 @@ const validateTicket = async (code: string) => {
     const data = response.data as { barcodes: BarcodeResponse[] }
     const mappedBarcodes = mapBarcodesResponse(data.barcodes)
 
-    // Ticket utama = yang qrcode-nya cocok dengan yang discan
-    const primaryIndex = mappedBarcodes.findIndex(b => b.qrcode === code)
+    const primaryIndex = mappedBarcodes.findIndex((b) => b.qrcode === code)
     if (primaryIndex === -1) {
       throw new Error('Scanned barcode not found in response')
     }
 
-      // Ticket utama + sesuaikan dengan entry limit
-    ticketData.value = normalizeTicketStatusWithLimit(mappedBarcodes[primaryIndex])
+    ticketData.value = attachLimitMessage(mappedBarcodes[primaryIndex])
 
-    // Ticket terkait (kalau ada)
     relatedTickets.value = mappedBarcodes
       .filter((_, index) => index !== primaryIndex)
-      .map(normalizeTicketStatusWithLimit)
+      .map((t) => attachLimitMessage(t))
 
     updateRecentScanStatus(code, ticketData.value.status)
 
-    if (ticketData.value.status === 'Pending') {
+    if (ticketData.value.status === 'Pending' || ticketData.value.status === 'Recheckin') {
       toast.success(ticketData.value.statusMessage || 'Ticket validated successfully!')
     } else if (ticketData.value.status === 'Redeemed') {
       toast.info(ticketData.value.statusMessage || 'Ticket has already been redeemed.')
-    } else if (ticketData.value.status === 'Recheckin') {
-      toast.info(ticketData.value.statusMessage || 'Ticket is ready for recheckin.')
     } else if (ticketData.value.status === 'Expired') {
       toast.error('Ticket has expired.')
     } else if (ticketData.value.status === 'Invalid') {
@@ -639,7 +744,7 @@ const validateTicket = async (code: string) => {
   }
 }
 
-// ========== REDEEM TICKET DENGAN LIMIT ENTRY AMOUNT ==========
+// ========== REDEEM TICKET (UTAMA) ==========
 const redeemTicket = async () => {
   if (!ticketData.value) return
 
@@ -653,7 +758,7 @@ const redeemTicket = async () => {
 
   if (entryAmount !== null && used >= entryAmount) {
     toast.error(`Entry limit reached (${entryAmount}x).`)
-    ticketData.value = normalizeTicketStatusWithLimit(ticketData.value)
+    ticketData.value = attachLimitMessage(ticketData.value, used)
     return
   }
 
@@ -662,29 +767,28 @@ const redeemTicket = async () => {
   try {
     const response = await api.post(`/events/${eventId.value}/qrcodes/redeem`, {
       qrcode: ticketData.value.qrcode,
-      redeemedBy: currentUser.value
-        ? String(currentUser.value.username).trim()
-        : 'Unknown',
+      redeemedBy: currentUser.value ? String(currentUser.value.username).trim() : 'Unknown',
     })
     const data = response.data as { barcode: BarcodeResponse; message?: string }
-    ticketData.value = normalizeTicketStatusWithLimit(mapBarcodeResponse(data.barcode))
-    toast.success(data.message || 'Ticket redeemed successfully!')
+    const mapped = mapBarcodeResponse(data.barcode)
 
     const newCount = used + 1
-    setRedeemCount(ticketData.value, newCount)
+    setRedeemCount(mapped, newCount)
+    ticketData.value = attachLimitMessage(mapped, newCount)
+
     updateRecentScanStatus(ticketData.value.qrcode, ticketData.value.status)
+    toast.success(data.message || 'Ticket redeemed successfully!')
   } catch (error) {
     console.error('Redeem error:', error)
     const err = error as { response?: { data?: { message?: string; barcode?: BarcodeResponse } } }
-    const message =
-      err.response?.data?.message ||
-      'Failed to redeem ticket'
-
+    const message = err.response?.data?.message || 'Failed to redeem ticket'
     toast.error(message)
 
     if (err.response?.data?.barcode) {
       const barcode = err.response.data.barcode
-      ticketData.value = normalizeTicketStatusWithLimit(mapBarcodeResponse(barcode))
+      const mapped = mapBarcodeResponse(barcode)
+      const usedNow = getRedeemCount(mapped)
+      ticketData.value = attachLimitMessage(mapped, usedNow)
       updateRecentScanStatus(barcode.qrcode, ticketData.value.status)
     }
   } finally {
@@ -692,14 +796,14 @@ const redeemTicket = async () => {
   }
 }
 
-// Redeem related tickets with limit
+// ========== REDEEM TICKET TERKAIT ==========
 const redeemTicketById = async (ticketId: number) => {
   if (!eventId.value) {
     toast.error('Event information not found. Please reopen this page from an event detail.')
     return
   }
 
-  const target = relatedTickets.value.find(t => t.id === ticketId)
+  const target = relatedTickets.value.find((t) => t.id === ticketId)
   if (!target) return
 
   const entryAmount = getEntryAmountForTicket(target)
@@ -707,6 +811,10 @@ const redeemTicketById = async (ticketId: number) => {
 
   if (entryAmount !== null && used >= entryAmount) {
     toast.error(`Entry limit reached (${entryAmount}x).`)
+    const idx = relatedTickets.value.findIndex((t) => t.id === ticketId)
+    if (idx !== -1) {
+      relatedTickets.value[idx] = attachLimitMessage(target, used)
+    }
     return
   }
 
@@ -715,38 +823,46 @@ const redeemTicketById = async (ticketId: number) => {
     if (used === 0) {
       const response = await api.post(`/events/${eventId.value}/qrcodes/redeem`, {
         qrcode: target.qrcode,
-        redeemedBy: currentUser.value
-          ? String(currentUser.value.username).trim()
-          : 'Unknown',
+        redeemedBy: currentUser.value ? String(currentUser.value.username).trim() : 'Unknown',
       })
       const data = response.data as { barcode: BarcodeResponse; message?: string }
-      const updatedTicket = normalizeTicketStatusWithLimit(mapBarcodeResponse(data.barcode))
+      const mapped = mapBarcodeResponse(data.barcode)
 
-      const index = relatedTickets.value.findIndex(t => t.id === ticketId)
+      const newCount = used + 1
+      setRedeemCount(mapped, newCount)
+      const normalized = attachLimitMessage(mapped, newCount)
+
+      const index = relatedTickets.value.findIndex((t) => t.id === ticketId)
       if (index !== -1) {
-        relatedTickets.value[index] = updatedTicket
+        relatedTickets.value[index] = normalized
       }
       toast.success(data.message || 'Ticket redeemed successfully!')
     } else {
       const nowIso = new Date().toISOString()
-      const updatedTicket = normalizeTicketStatusWithLimit({
+      const baseTicket: TicketData = {
         ...target,
         redeemedAt: nowIso,
         status: 'Recheckin',
-      })
-      const index = relatedTickets.value.findIndex(t => t.id === ticketId)
-      if (index !== -1) {
-        relatedTickets.value[index] = updatedTicket
       }
-      toast.success(`Entry used ${used + 1}/${entryAmount ?? '∞'}`)
+
+      const newCount = used + 1
+      setRedeemCount(baseTicket, newCount)
+      const normalized = attachLimitMessage(baseTicket, newCount)
+
+      const index = relatedTickets.value.findIndex((t) => t.id === ticketId)
+      if (index !== -1) {
+        relatedTickets.value[index] = normalized
+      }
+
+      toast.success(
+        entryAmount ? `Entry used ${newCount}/${entryAmount}` : `Entry used ${newCount} times`
+      )
     }
 
-    const newCount = used + 1
-    setRedeemCount(target, newCount)
     updateRecentScanStatus(target.qrcode, 'Redeemed')
   } catch (error) {
     console.error('Redeem error:', error)
-    const err = error as { response?: { data?: { message?: string; barcode?: BarcodeResponse } } }
+    const err = error as { response?: { data?: { message?: string } } }
     const message = err.response?.data?.message || 'Failed to redeem ticket'
     toast.error(message)
   } finally {
@@ -754,15 +870,26 @@ const redeemTicketById = async (ticketId: number) => {
   }
 }
 
-// Tombol Redeem aktif kalau ada ticket & belum melewati limit atau status Recheckin atau Redeemed
+// ========== LOGIKA TOMBOL ==========
 const canRedeemTicket = (ticket: TicketData): boolean => {
   const entryAmount = getEntryAmountForTicket(ticket)
-  if (!entryAmount) {
-    // Tidak ada limit → pakai status asli
-    return ticket.status === 'Pending' || ticket.status === 'Recheckin' || ticket.status === 'Redeemed'
-  }
   const used = getRedeemCount(ticket)
-  return used < entryAmount && (ticket.status === 'Pending' || ticket.status === 'Recheckin' || ticket.status === 'Redeemed')
+
+  if (ticket.status === 'Invalid' || ticket.status === 'Expired') {
+    return false
+  }
+
+  if (entryAmount) {
+    if (used >= entryAmount) return false
+    return true
+  }
+
+  // kalau tidak ada entry_amount dari backend
+  return (
+    ticket.status === 'Pending' ||
+    ticket.status === 'Recheckin' ||
+    ticket.status === 'Redeemed'
+  )
 }
 
 const canRedeem = computed(() => {
@@ -770,10 +897,11 @@ const canRedeem = computed(() => {
   return canRedeemTicket(ticketData.value)
 })
 
-// Button class based on status
+// Button class
 const buttonClass = (status: string): string => {
-  const baseClasses = 'text-white px-3 py-1 text-sm font-medium rounded transition-colors disabled:bg-gray-400'
-  if (status === 'Redeemed' || status === 'Recheckin') {
+  const baseClasses =
+    'text-white px-3 py-1 text-sm font-medium rounded transition-colors disabled:bg-gray-400'
+  if (status === 'Recheckin' || status === 'Redeemed') {
     return `bg-blue-600 hover:bg-blue-700 ${baseClasses}`
   } else {
     return `bg-green-600 hover:bg-green-700 ${baseClasses}`
@@ -789,12 +917,13 @@ onUnmounted(() => {
 
 onMounted(() => {
   initReader()
+  if (eventId.value) {
+    fetchEntryAmounts()
+  }
 })
 </script>
 
-
 <style scoped>
-/* Custom styles for scanner overlay */
 .scanner-overlay {
   position: relative;
 }

@@ -108,142 +108,144 @@
         </div>
 
         <!-- Table -->
-        <div class="max-w-full overflow-x-auto">
-          <table class="min-w-full border border-separate border-spacing-y-2">
-            <thead>
-              <tr class="border-b">
-                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">
-                  <input
-                    type="checkbox"
-                    :checked="isAllSelected"
-                    @change="toggleSelectAll"
-                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded
-                           focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800
-                           focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                  />
-                </th>
-                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">No</th>
-                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">ID Transaction</th>
-                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">QR Code</th>
-                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Name</th>
-                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Instansi</th>
-                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Provinsi</th>
-                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Kabupaten/Kota</th>
-                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Jabatan</th>
-                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">No Hp</th>
-                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Email</th>
-                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Ukuran Baju</th>
-                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Status Kehadiran</th>
-                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Tanggal Kehadiran</th>
-                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Other Data</th>
-                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Redeem Date</th>
-                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Status</th>
-                <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-if="paginatedBarcodes.length === 0"
-                class="bg-gray-50 dark:bg-gray-800/50"
-              >
-                <td
-                  colspan="9"
-                  class="px-5 py-6 text-center text-gray-500 dark:text-gray-300"
+        <div
+          class="max-w-full border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden"
+        >
+          <div class="max-h-[600px] overflow-y-auto overflow-x-auto">
+            <table class="min-w-full border-separate border-spacing-y-2">
+              <thead>
+                <tr class="border-b">
+                  <th class="px-5 py-3 text-left text-gray-900 dark:text-white">
+                    <input
+                      type="checkbox"
+                      :checked="isAllSelected"
+                      @change="toggleSelectAll"
+                      class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded
+                             focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800
+                             focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                    />
+                  </th>
+                  <th class="px-5 py-3 text-left text-gray-900 dark:text-white">No</th>
+                  <th class="px-5 py-3 text-left text-gray-900 dark:text-white">ID Transaction</th>
+                  <th class="px-5 py-3 text-left text-gray-900 dark:text-white">QR Code</th>
+                  <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Name</th>
+                  <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Instansi</th>
+                  <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Provinsi</th>
+                  <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Kabupaten/Kota</th>
+                  <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Jabatan</th>
+                  <th class="px-5 py-3 text-left text-gray-900 dark:text-white">No Hp</th>
+                  <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Email</th>
+                  <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Ukuran Baju</th>
+                  <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Status Kehadiran</th>
+                  <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Tanggal Kehadiran</th>
+                  <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Other Data</th>
+                  <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Redeem Date</th>
+                  <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Status</th>
+                  <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-if="paginatedBarcodes.length === 0"
+                  class="bg-gray-50 dark:bg-gray-800/50"
                 >
-                  No barcodes found.
-                </td>
-              </tr>
+                  <td
+                    colspan="18"
+                    class="px-5 py-6 text-center text-gray-500 dark:text-gray-300"
+                  >
+                    No barcodes found.
+                  </td>
+                </tr>
 
-              <tr
-                v-else
-                v-for="(barcode, index) in paginatedBarcodes"
-                :key="barcode.id"
-                class="border-t bg-gray-50 dark:bg-gray-800/50"
-              >
-                <td class="px-5 py-6">
-                  <input
-                    type="checkbox"
-                    v-model="selectedBarcodes"
-                    :value="barcode.id.toString()"
-                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded
-                           focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800
-                           focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                    @change="handleBarcodeChange(barcode.id.toString(), $event)"
-                  />
-                </td>
-                <td class="px-5 py-6 text-gray-900 dark:text-white">
-                  {{ (currentPage - 1) * numericEntriesPerPage + index + 1 }}
-                </td>
-                <td class="px-5 py-6 text-gray-900 dark:text-white">
-                  {{ barcode.id_transaction }}
-                </td>
-                <td class="px-5 py-6 text-gray-900 dark:text-white">
-                  {{ barcode.qrcode }}
-                </td>
-                <td class="px-5 py-6 text-gray-900 dark:text-white">
-                  {{ barcode.name }}
-                </td>
-                 <td class="px-5 py-6 text-gray-900 dark:text-white">
-                  {{ barcode.instansi }}
-                </td>
-                <td class="px-5 py-6 text-gray-900 dark:text-white">
-                  {{ barcode.provinsi }}
-                </td>
-                <td class="px-5 py-6 text-gray-900 dark:text-white">
-                  {{ barcode.kota }}
-                </td>
-                <td class="px-5 py-6 text-gray-900 dark:text-white">
-                  {{ barcode.jabatan }}
-                </td>
-                <td class="px-5 py-6 text-gray-900 dark:text-white">
-                  {{ barcode.no_hp }}
-                </td>
-                <td class="px-5 py-6 text-gray-900 dark:text-white">
-                  {{ barcode.email }}
-                </td>
-                
-                
-                 <td class="px-5 py-6 text-gray-900 dark:text-white">
-                  {{ barcode.ukuran_baju }}
-                </td>
-                <td class="px-5 py-6 text-gray-900 dark:text-white">
-                  {{ barcode.status_kehadiran }}
-                </td>
-                <td class="px-5 py-6 text-gray-900 dark:text-white">
-                  {{ barcode.tanggal_kehadiran }}
-                </td>
-                <td class="px-5 py-6 text-gray-900 dark:text-white">
-                  {{ barcode.other_data }}
-                </td>
-                <td class="px-5 py-6 text-gray-900 dark:text-white">
-                  {{ formatDate(barcode.redeemed_at) }}
-                </td>
-                <td class="px-5 py-6">
-                  <span
-                    class="px-3 py-1 text-xs font-semibold rounded-full"
-                    :class="statusBadgeClasses(barcode.status)"
-                  >
-                    {{ barcode.status }}
-                  </span>
-                </td>
-                <td class="px-5 py-6">
-                  <button
-                    class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300
-                           transition p-2 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/20"
-                    @click="viewBarcode(barcode)"
-                  >
-                    <EyeIcon />
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                <tr
+                  v-else
+                  v-for="(barcode, index) in paginatedBarcodes"
+                  :key="barcode.id"
+                  class="border-t bg-gray-50 dark:bg-gray-800/50"
+                >
+                  <td class="px-5 py-6">
+                    <input
+                      type="checkbox"
+                      v-model="selectedBarcodes"
+                      :value="barcode.id.toString()"
+                      class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded
+                             focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800
+                             focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                      @change="handleBarcodeChange(barcode.id.toString(), $event)"
+                    />
+                  </td>
+                  <td class="px-5 py-6 text-gray-900 dark:text-white">
+                    {{ (currentPage - 1) * numericEntriesPerPage + index + 1 }}
+                  </td>
+                  <td class="px-5 py-6 text-gray-900 dark:text-white">
+                    {{ barcode.id_transaction }}
+                  </td>
+                  <td class="px-5 py-6 text-gray-900 dark:text-white">
+                    {{ barcode.qrcode }}
+                  </td>
+                  <td class="px-5 py-6 text-gray-900 dark:text-white">
+                    {{ barcode.name }}
+                  </td>
+                  <td class="px-5 py-6 text-gray-900 dark:text-white">
+                    {{ barcode.instansi }}
+                  </td>
+                  <td class="px-5 py-6 text-gray-900 dark:text-white">
+                    {{ barcode.provinsi }}
+                  </td>
+                  <td class="px-5 py-6 text-gray-900 dark:text-white">
+                    {{ barcode.kota }}
+                  </td>
+                  <td class="px-5 py-6 text-gray-900 dark:text-white">
+                    {{ barcode.jabatan }}
+                  </td>
+                  <td class="px-5 py-6 text-gray-900 dark:text-white">
+                    {{ barcode.no_hp }}
+                  </td>
+                  <td class="px-5 py-6 text-gray-900 dark:text-white">
+                    {{ barcode.email }}
+                  </td>
+                  <td class="px-5 py-6 text-gray-900 dark:text-white">
+                    {{ barcode.ukuran_baju }}
+                  </td>
+                  <td class="px-5 py-6 text-gray-900 dark:text-white">
+                    {{ barcode.status_kehadiran }}
+                  </td>
+                  <td class="px-5 py-6 text-gray-900 dark:text-white">
+                    {{ barcode.tanggal_kehadiran }}
+                  </td>
+                  <td class="px-5 py-6 text-gray-900 dark:text-white">
+                    {{ barcode.other_data }}
+                  </td>
+                  <td class="px-5 py-6 text-gray-900 dark:text-white">
+                    {{ formatDate(barcode.redeemed_at) }}
+                  </td>
+                  <td class="px-5 py-6">
+                    <span
+                      class="px-3 py-1 text-xs font-semibold rounded-full"
+                      :class="statusBadgeClasses(barcode.status)"
+                    >
+                      {{ barcode.status }}
+                    </span>
+                  </td>
+                  <td class="px-5 py-6">
+                    <button
+                      class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300
+                             transition p-2 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/20"
+                      @click="viewBarcode(barcode)"
+                    >
+                      <EyeIcon />
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <!-- Pagination (disamakan dengan halaman lain) -->
+        <!-- Pagination -->
         <div
           v-if="filteredBarcodes.length > 0"
-          class="mt-4 flex flex-col md:flex-row items-center justify-between gap-3"
+          class="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between"
         >
           <div class="text-xs md:text-sm text-gray-600 dark:text-gray-300">
             Showing
@@ -255,9 +257,9 @@
             records
           </div>
 
-          <div class="flex items-center gap-2">
+          <div class="flex flex-wrap items-center justify-center md:justify-end gap-2">
             <button
-              class="px-3 py-1.5 text-xs md:text-sm border rounded-lg
+              class="px-3 py-1.5 text-xs md:text-sm border rounded-full
                      border-gray-300 dark:border-gray-600
                      text-gray-700 dark:text-gray-200
                      disabled:opacity-40 disabled:cursor-not-allowed"
@@ -270,9 +272,9 @@
             <button
               v-for="page in pageNumbers"
               :key="page"
-              class="px-3 py-1.5 text-xs md:text-sm border rounded-lg"
+              class="px-3 py-1.5 text-xs md:text-sm rounded-full border"
               :class="page === currentPage
-                ? 'border-primary text-primary font-semibold'
+                ? 'border-primary text-primary font-semibold bg-primary/5'
                 : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'"
               @click="goToPage(page)"
             >
@@ -280,7 +282,7 @@
             </button>
 
             <button
-              class="px-3 py-1.5 text-xs md:text-sm border rounded-lg
+              class="px-3 py-1.5 text-xs md:text-sm border rounded-full
                      border-gray-300 dark:border-gray-600
                      text-gray-700 dark:text-gray-200
                      disabled:opacity-40 disabled:cursor-not-allowed"
@@ -428,12 +430,37 @@ const endItem = computed(() => {
   return end > filteredBarcodes.value.length ? filteredBarcodes.value.length : end
 })
 
-// Page numbers (style sama dgn halaman lain)
+// Page numbers (dibatasi supaya tidak jebol kalau total halaman besar)
 const pageNumbers = computed(() => {
+  const total = totalPages.value
+  const current = currentPage.value
+  const maxVisible = 5 // jumlah tombol maksimal yang ditampilkan
+
   const pages: number[] = []
-  for (let i = 1; i <= totalPages.value; i += 1) {
+
+  if (total <= maxVisible) {
+    for (let i = 1; i <= total; i += 1) {
+      pages.push(i)
+    }
+    return pages
+  }
+
+  const half = Math.floor(maxVisible / 2)
+  let start = current - half
+  let end = current + half
+
+  if (start < 1) {
+    start = 1
+    end = maxVisible
+  } else if (end > total) {
+    end = total
+    start = total - maxVisible + 1
+  }
+
+  for (let i = start; i <= end; i += 1) {
     pages.push(i)
   }
+
   return pages
 })
 
@@ -544,11 +571,11 @@ async function deleteSelectedBarcodes() {
 async function confirmDelete() {
   try {
     const ids = selectedBarcodes.value.map(id => parseInt(id, 10))
-    const response = await api({
+    const response = (await api({
       method: 'DELETE',
       url: `/events/${eventId.value}/categories/${eventCategoryId.value}/qrcodes`,
       data: { ids }
-    }) as unknown as { data: { message: string } }
+    })) as unknown as { data: { message: string } }
 
     toast.success(response.data.message)
     selectedBarcodes.value = []

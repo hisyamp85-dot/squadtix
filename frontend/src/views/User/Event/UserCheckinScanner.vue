@@ -62,7 +62,7 @@
                     {{ selectedEventId ? 'Select Category' : 'Select event first' }}
                   </option>
                   <option v-for="category in categories" :key="category.id" :value="category.id">
-                    {{ category.name }}
+                    {{ category.name }} ({{ formatEntryLimit(category.entry_amount) }})
                   </option>
                 </select>
               </div>
@@ -248,6 +248,20 @@
                     {{ scanResult.barcode.categoryName || '-' }}
                   </span>
                 </div>
+
+                <div v-if="scanResult.entryLimit !== undefined" class="flex justify-between text-sm">
+                  <span class="text-gray-500">Entry Limit</span>
+                  <span class="text-gray-900 dark:text-white">
+                    {{ formatEntryLimit(scanResult.entryLimit ?? null) }}
+                  </span>
+                </div>
+                <div v-if="scanResult.entryUsed !== undefined" class="flex justify-between text-sm">
+                  <span class="text-gray-500">Entry Used</span>
+                  <span class="text-gray-900 dark:text-white">
+                    {{ scanResult.entryUsed ?? '-' }}
+                  </span>
+                </div>
+
                 <div v-if="scanResult.log" class="flex justify-between text-sm">
                   <span class="text-gray-500">Checked-in At</span>
                   <span class="text-gray-900 dark:text-white">
@@ -306,7 +320,7 @@ const storedUser = computed<StoredUser | null>(() => {
 
 const loggedInUserId = computed(() => storedUser.value?.id ?? null)
 
-// ============ USER ID DI ROUTE =============
+// ============ USER ID DI ROUTE ============
 const userId = computed(() => (route.params.id as string) || '')
 
 // ============ BREADCRUMBS USER ============
@@ -355,6 +369,8 @@ interface ScanResultState {
   message: string
   barcode: BarcodeInfo | null
   log: ScanLogInfo | null
+  entryUsed?: number | null
+  entryLimit?: number | null
 }
 
 interface RecentAttempt {
@@ -372,6 +388,7 @@ interface EventSummary {
 interface CategorySummary {
   id: string
   name: string
+  entry_amount: number | null
 }
 
 // ============ STATE ============
@@ -409,22 +426,6 @@ const goToLogs = () => {
   } else {
     router.push('/login')
   }
-}
-
-/* ======================================================
- *  ENTRY AMOUNT (ambil dari localStorage, kirim ke backend)
- * ====================================================*/
-const getEntryAmountForSelected = (): number | null => {
-  if (!selectedEventId.value || !selectedCategoryId.value) return null
-
-  const key = `entryAmount:${selectedEventId.value}:${selectedCategoryId.value}`
-  const saved = localStorage.getItem(key)
-  if (!saved) return null
-
-  const n = Number(saved)
-  if (Number.isNaN(n) || n <= 0) return null
-
-  return n
 }
 
 /* ==========================
@@ -499,13 +500,21 @@ const addRecentAttempt = (code: string, status: 'success' | 'error') => {
 }
 
 /* ==========================
+ *  FORMATTER ENTRY LIMIT
+ * ========================*/
+const formatEntryLimit = (value: number | null | undefined): string => {
+  if (value === null || typeof value === 'undefined' || value <= 0) {
+    return 'Unlimited'
+  }
+  return `${value}x`
+}
+
+/* ==========================
  *  SUBMIT (LIMIT DI BACKEND)
  * ========================*/
 const submitCode = async (code: string) => {
   try {
     isProcessing.value = true
-
-    const entryAmount = getEntryAmountForSelected()
 
     const payload: any = {
       qrcode: code,
@@ -513,10 +522,8 @@ const submitCode = async (code: string) => {
       eventCategoryId: selectedCategoryId.value,
       typeScan: selectedTypeScan.value, // "CheckIn"
       scannedBy: currentUser.value ? String(currentUser.value.username).trim() : 'Unknown',
-    }
-
-    if (entryAmount !== null) {
-      payload.entryAmount = entryAmount
+      // kalau nanti mau pakai filter userId di backend, bisa aktifkan:
+      // userId: loggedInUserId.value ? String(loggedInUserId.value) : undefined,
     }
 
     const response = await api.post('/checkin/scan', payload)
@@ -534,6 +541,11 @@ const submitCode = async (code: string) => {
       message: data.message,
       barcode: data.barcode,
       log: data.log,
+      entryUsed: typeof data.entryUsed === 'number' ? data.entryUsed : null,
+      entryLimit:
+        typeof data.entryLimit === 'number' || data.entryLimit === null
+          ? data.entryLimit
+          : null,
     }
 
     addRecentAttempt(code, 'success')
@@ -546,12 +558,23 @@ const submitCode = async (code: string) => {
 
     const errBarcode: BarcodeInfo | null = error?.response?.data?.barcode || null
     const errLog: ScanLogInfo | null = error?.response?.data?.log || null
+    const errEntryUsed: number | null =
+      typeof error?.response?.data?.entryUsed === 'number'
+        ? error.response.data.entryUsed
+        : null
+    const errEntryLimitRaw = error?.response?.data?.entryLimit
+    const errEntryLimit: number | null =
+      typeof errEntryLimitRaw === 'number' || errEntryLimitRaw === null
+        ? errEntryLimitRaw
+        : null
 
     scanResult.value = {
       status: 'error',
       message,
       barcode: errBarcode,
       log: errLog,
+      entryUsed: errEntryUsed,
+      entryLimit: errEntryLimit,
     }
 
     addRecentAttempt(code, 'error')
@@ -606,8 +629,16 @@ const fetchCategories = async (eventId: string) => {
       return
     }
     const response = await api.get(`/events/${eventId}/categories`)
-    const data = response.data as { categories: Array<{ name: string; id: string }> }
-    categories.value = data.categories
+    const data = response.data as {
+      categories: Array<{ name: string; id: string; entry_amount: number | null }>
+    }
+
+    // backend sudah kirim entry_amount dari EntryAmountStore JSON
+    categories.value = data.categories.map((c) => ({
+      id: c.id,
+      name: c.name,
+      entry_amount: c.entry_amount ?? null,
+    }))
   } catch (error) {
     console.error('Failed to fetch categories:', error)
     toast.error('Failed to load categories')
