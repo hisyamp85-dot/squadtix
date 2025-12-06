@@ -1,13 +1,18 @@
 <template>
   <aside
     :class="[
-      'fixed mt-16 lg:mt-4 top-0 left-0 flex flex-col',
+      // POSISI & DIMENSI
+      'fixed left-0 flex flex-col',
+      // header kira-kira 4.5rem di mobile, 2.5rem di desktop
+      'top-[4.5rem] lg:top-[2.5rem]',
       'h-[calc(100vh-4.5rem)] lg:h-[calc(100vh-2.5rem)]',
+      // STYLE
       'px-3 lg:px-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl',
       'border border-slate-200/70 dark:border-slate-700/60',
       'shadow-xl rounded-3xl lg:rounded-3xl',
       'transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]',
-      'z-[10000]',
+      // z-index di atas backdrop, tapi di bawah header/footer kalau mau
+      'z-[9500]',
       {
         // Lebar sidebar di layar besar
         'lg:w-[280px]': isExpanded || isMobileOpen || isHovered,
@@ -309,10 +314,6 @@ import { useSidebar } from '@/composables/useSidebar'
 const route = useRoute()
 const { isExpanded, isMobileOpen, isHovered, openSubmenu } = useSidebar()
 
-// ======================
-//   USER & ROLE INFO
-// ======================
-
 type NormalizedRole = 'admin' | 'user'
 
 interface RawUser {
@@ -333,7 +334,7 @@ interface MenuItem {
   subItems?: MenuItem[]
 }
 
-// Ambil user dari localStorage, aman di semua device (cek typeof window)
+// Ambil user dari localStorage
 const storedUser = computed<RawUser | null>(() => {
   if (typeof window === 'undefined') return null
   const raw = localStorage.getItem('user')
@@ -345,8 +346,6 @@ const storedUser = computed<RawUser | null>(() => {
   }
 })
 
-// Normalisasi role → 'admin' atau 'user'
-// Sama logika seperti di router guard
 const normalizedRole = computed<NormalizedRole | null>(() => {
   const raw = storedUser.value?.role
   if (raw == null) return null
@@ -359,22 +358,16 @@ const isAdmin = computed(() => normalizedRole.value === 'admin')
 const isUser = computed(() => normalizedRole.value === 'user')
 const userId = computed(() => storedUser.value?.id ?? null)
 
-// base path utk user, misal "/user/44"
 const userBase = computed(() => {
   if (!isUser.value || !userId.value) return ''
   return `/user/${userId.value}`
 })
 
-// home path utk brand SquadTix
 const homePath = computed(() => {
   if (isAdmin.value) return '/'
   if (isUser.value && userBase.value) return userBase.value
   return '/'
 })
-
-// ======================
-//     MENU DEFINITIONS
-// ======================
 
 const adminMenuGroups: { title: string; items: MenuItem[] }[] = [
   {
@@ -489,22 +482,16 @@ const userMenuGroups = computed<{ title: string; items: MenuItem[] }[]>(() => {
   ]
 })
 
-// menu yang dipakai tergantung role
 const menuGroups = computed(() => {
   if (isAdmin.value) return adminMenuGroups
   if (isUser.value) return userMenuGroups.value
-  // fallback kalau entah bagaimana role nggak kebaca
   return adminMenuGroups
 })
 
-// ======================
-//     SEARCH MENU
-// ======================
-
+// SEARCH
 const searchQuery = ref('')
 
 const normalizeText = (s: string | undefined) => (s ?? '').trim().toLowerCase()
-
 const matchesQuery = (text: string | undefined) => {
   const q = normalizeText(searchQuery.value)
   if (!q) return true
@@ -520,29 +507,21 @@ const subItemMatches = (subItem: MenuItem) => {
 const itemMatches = (item: MenuItem) => {
   const q = normalizeText(searchQuery.value)
   if (!q) return true
-
   if (matchesQuery(item.name)) return true
-
   if (item.subItems && item.subItems.length > 0) {
     return item.subItems.some((sub) => matchesQuery(sub.name))
   }
-
   return false
 }
 
 const groupMatches = (group: { title: string; items: MenuItem[] }) => {
   const q = normalizeText(searchQuery.value)
   if (!q) return true
-
   if (matchesQuery(group.title)) return true
-
   return group.items.some((item) => itemMatches(item))
 }
 
-// ======================
-//     ACTIVE / SUBMENU
-// ======================
-
+// ACTIVE & SUBMENU
 const isActive = (path?: string) => path !== undefined && route.path === path
 
 const toggleSubmenu = (groupIndex: number, itemIndex: number) => {
@@ -554,24 +533,19 @@ const isSubmenuOpen = (groupIndex: number, itemIndex: number) => {
   const key = `${groupIndex}-${itemIndex}`
   const group = menuGroups.value[groupIndex]
   if (!group) return openSubmenu.value === key
-
   const item = group.items[itemIndex]
   if (!item) return openSubmenu.value === key
-
   const hasActiveSubItem = item.subItems?.some((subItem) => isActive(subItem.path))
   return openSubmenu.value === key || !!hasActiveSubItem
 }
 
-// khusus user management di bawah (footer admin)
+// khusus user management di bawah
 const isSubmenuOpenUserManagement = ref(false)
 const toggleUserManagement = () => {
   isSubmenuOpenUserManagement.value = !isSubmenuOpenUserManagement.value
 }
 
-// ======================
-//      TRANSITIONS
-// ======================
-
+// TRANSITIONS
 const startTransition = (el: Element, done?: () => void) => {
   const element = el as HTMLElement
   element.style.height = 'auto'
@@ -611,7 +585,6 @@ const endTransition = (el: Element) => {
   @apply bg-transparent;
 }
 
-/* icon bulat di kiri */
 .menu-item-icon-active {
   @apply inline-flex h-8 w-8 items-center justify-center
     rounded-xl bg-white/20 text-white;
@@ -629,7 +602,6 @@ const endTransition = (el: Element) => {
   @apply truncate;
 }
 
-/* DROPDOWN / SUBMENU */
 .menu-dropdown-item {
   @apply flex items-center gap-2 rounded-xl px-2.5 py-1.5
     text-[12px] text-slate-500 dark:text-slate-300
@@ -646,7 +618,6 @@ const endTransition = (el: Element) => {
   @apply bg-transparent;
 }
 
-/* badge "new" / "pro" */
 .menu-dropdown-badge {
   @apply inline-flex items-center rounded-full px-2 py-[2px]
     text-[10px] font-semibold uppercase tracking-wide;
@@ -660,12 +631,10 @@ const endTransition = (el: Element) => {
   @apply bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-100;
 }
 
-/* sedikit spacing di list */
 nav ul li {
   @apply relative;
 }
 
-/* no-scrollbar lokal buat sidebar */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
