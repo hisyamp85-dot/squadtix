@@ -37,8 +37,8 @@
             required
           >
             <option value="">Select Section</option>
-            <option value="Redemption">Redemption</option>
-            <option value="Scan Wristband">Scan Wristband</option>
+            <option value="Scanner">Scanner</option>
+            
           </select>
         </div>
         <div class="mb-4">

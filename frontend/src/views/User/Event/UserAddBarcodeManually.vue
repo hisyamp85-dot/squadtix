@@ -102,7 +102,7 @@
         <div class="mb-3">
           <label class="block text-sm font-medium">Ukuran Baju</label>
           <select
-            v-model="formData.ukuran_baju"
+            v-model="formData.ukuran_jaket"
             class="w-full border rounded p-2"
             required
           >
@@ -211,7 +211,7 @@ interface BarcodeForm {
   jabatan: string | null
   email: string
   no_hp: string
-  ukuran_baju: string
+  ukuran_jaket: string
   status_kehadiran: string
   tanggal_kehadiran: string | null
   other_data: string | null
@@ -242,7 +242,7 @@ const formData = ref<BarcodeForm>({
   jabatan: null,
   email: '',
   no_hp: '',
-  ukuran_baju: '',
+  ukuran_jaket: '',
   status_kehadiran: '',
   tanggal_kehadiran: null,
   other_data: null

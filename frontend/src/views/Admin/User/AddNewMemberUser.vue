@@ -179,7 +179,7 @@ const togglePasswordVisibility = () => {
 
 const roles = ref<string[]>(['Admin', 'User'])
 const statuses = ref<string[]>(['Active', 'Inactive'])
-const sections = ref<string[]>(['Redemption', 'Scan Wristband'])
+const sections = ref<string[]>(['Scanner'])
 
 const usernameError = ref('')
 const emailError = ref('')

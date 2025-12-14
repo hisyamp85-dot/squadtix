@@ -31,7 +31,7 @@ export default class CategoryQrcode extends BaseModel {
 
 
   @column()
-  public ukuran_baju: string
+  public ukuran_jaket: string
 
   @column()
   public provinsi: string | null

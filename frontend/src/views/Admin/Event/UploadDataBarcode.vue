@@ -177,7 +177,7 @@ function triggerFileInput() {
 }
 
 function downloadTemplate() {
-  const csvContent = `id_transaction,qrcode,name,instansi,provinsi,kota,jabatan,no_hp,email,ukuran_baju,status_kehadiran,tanggal_kehadiran,other_data\nTIX-123ABC,ABC123,test1,Bawaslu RI,DKI Jakarta,Jakarta,Ketua,08123456789,test1@example.com,XL,hadir,2025-12-09,Reguler\nTIX-456DEF,DEF456,test2,Bawaslu Provinsi,Jawa Barat,Bandung,Sekretaris,08987654321,test2@example.com,L,tidak_hadir,,VIP\n`
+  const csvContent = `id_transaction,qrcode,name,instansi,provinsi,kota,jabatan,no_hp,email,ukuran_jaket,status_kehadiran,tanggal_kehadiran,other_data\nTIX-123ABC,ABC123,test1,Bawaslu RI,DKI Jakarta,Jakarta,Ketua,08123456789,test1@example.com,XL,hadir,2025-12-09,Reguler\nTIX-456DEF,DEF456,test2,Bawaslu Provinsi,Jawa Barat,Bandung,Sekretaris,08987654321,test2@example.com,L,tidak_hadir,,VIP\n`
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
   const link = document.createElement('a')
   const url = URL.createObjectURL(blob)

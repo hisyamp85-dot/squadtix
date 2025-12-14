@@ -165,7 +165,7 @@
                       <div class="mt-4 space-y-1 text-left">
                         <p><span class="font-semibold">Event:</span> {{ ticketData.eventName || '—' }}</p>
                         <p><span class="font-semibold">Category:</span> {{ ticketData.category || '—' }}</p>
-                        <p><span class="font-semibold">Ukuran Baju:</span> {{ ticketData.ukuran_baju || '—' }}</p>
+                        <p><span class="font-semibold">Ukuran Baju:</span> {{ ticketData.ukuran_jaket || '—' }}</p>
                         <p><span class="font-semibold">Instansi:</span> {{ ticketData.instansi || '—' }}</p>
                         <p><span class="font-semibold">Provinsi:</span> {{ ticketData.provinsi || '—' }}</p>
                         <p><span class="font-semibold">Kota:</span> {{ ticketData.kota || '—' }}</p>
@@ -402,7 +402,7 @@ interface TicketData {
   eventCategoryId: string | null
 
   nip?: string | null
-  ukuran_baju?: string | null
+  ukuran_jaket?: string | null
   instansi?: string | null
   kota?: string | null
   email?: string | null
@@ -434,7 +434,7 @@ interface BarcodeResponse {
   groupName: string | null
   id_transaction: string | null
 
-  ukuran_baju?: string | null
+  ukuran_jaket?: string | null
   instansi?: string | null
   kota?: string | null
   email?: string | null
@@ -646,7 +646,7 @@ const mapBarcodeResponse = (barcode: BarcodeResponse): TicketData => {
     id_transaction: barcode.id_transaction || null,
     eventCategoryId: barcode.event_category_id || null,
 
-    ukuran_baju: barcode.ukuran_baju || null,
+    ukuran_jaket: barcode.ukuran_jaket || null,
     instansi: barcode.instansi || null,
     kota: barcode.kota || null,
     email: barcode.email || null,

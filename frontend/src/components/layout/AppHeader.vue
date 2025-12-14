@@ -108,7 +108,7 @@ import { ref } from 'vue'
 import { useSidebar } from '@/composables/useSidebar'
 import ThemeToggler from '../common/ThemeToggler.vue'
 import FullScreenToggler from '../common/FullScreenToggler.vue'
-// import SearchBar from './header/SearchBar.vue'
+import SearchBar from './header/SearchBar.vue'
 import HeaderLogo from './header/HeaderLogo.vue'
 import UserMenu from './header/UserMenu.vue'
 

@@ -245,7 +245,7 @@
                     {{ barcode.email }}
                   </td>
                   <td class="px-5 py-6 text-gray-900 dark:text-white">
-                    {{ barcode.ukuran_baju }}
+                    {{ barcode.ukuran_jaket }}
                   </td>
                   <td class="px-5 py-6 text-gray-900 dark:text-white">
                     {{ barcode.status_kehadiran }}
@@ -394,7 +394,7 @@ interface Barcode {
   jabatan: string | null
   no_hp: string | null
   email: string | null
-  ukuran_baju: string | null
+  ukuran_jaket: string | null
   status_kehadiran: string | null
   tanggal_kehadiran: string | null
   other_data: string | null

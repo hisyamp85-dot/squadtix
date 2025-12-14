@@ -11,23 +11,20 @@
     "start": "start",
     "tests": "tests"
   },
-
   "preloads": [
     "./start/kernel",
     "./start/routes"
   ],
-
   "providers": [
     "@adonisjs/core",
     "@adonisjs/lucid",
-    "@adonisjs/events"
+    "@adonisjs/events",
+    "@adonisjs/auth"
   ],
-
   "aceProviders": [
     "@adonisjs/lucid",
     "@adonisjs/events"
   ],
-
   "aliases": {
     "App": "app",
     "Config": "config",
@@ -37,12 +34,10 @@
     "Route": "Adonis/Core/Route",
     "Event": "Adonis/Core/Event"
   },
-
   "commands": [
     "./commands",
     "@adonisjs/lucid/build/commands"
   ],
-
   "metaFiles": [
     {
       "pattern": "public/**",

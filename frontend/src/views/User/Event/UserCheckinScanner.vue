@@ -296,7 +296,7 @@ const router = useRouter()
 const route = useRoute()
 
 // ============ USER DARI LOCALSTORAGE ============
-type Role = 'Admin' | 'User' | 'Redemption' | 'Scan Wristband' | string
+type Role = 'Admin' | 'User' | 'Scanner' | string
 
 interface StoredUser {
   id: number | string

@@ -44,10 +44,8 @@
                    focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500
                    dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
             placeholder="Type group name"
-            @input="handleAutoGroupInput"
-            @keydown.enter.prevent
+            @keydown.enter.prevent="commitCurrentGroupInput"
             @keydown.backspace="handleBackspaceGroup"
-            @blur="commitCurrentGroupInput"
           />
         </div>
 
@@ -129,7 +127,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onBeforeUnmount } from 'vue'
+import { ref, watch } from 'vue'
 import { useSidebar } from '@/composables/useSidebar'
 import { toast } from 'vue3-toastify'
 import type { HistoryState } from 'vue-router'
@@ -160,9 +158,6 @@ const groups = ref<string[]>([])
 const editingIndex = ref<number | null>(null)
 const editingGroup = ref('')
 
-// timeout untuk auto-commit saat user berhenti mengetik
-let groupTypingTimeout: number | null = null
-
 // Reset data setiap modal dibuka
 watch(
   () => props.show,
@@ -173,22 +168,9 @@ watch(
       newGroup.value = ''
       editingIndex.value = null
       editingGroup.value = ''
-    } else {
-      clearGroupTypingTimeout()
     }
   }
 )
-
-onBeforeUnmount(() => {
-  clearGroupTypingTimeout()
-})
-
-const clearGroupTypingTimeout = () => {
-  if (groupTypingTimeout !== null) {
-    clearTimeout(groupTypingTimeout)
-    groupTypingTimeout = null
-  }
-}
 
 // tambah group, hindari duplikat (case-insensitive)
 const addGroupToken = (value: string) => {
@@ -206,19 +188,8 @@ const addGroupToken = (value: string) => {
   groups.value.push(token)
 }
 
-// Auto-commit setelah user berhenti mengetik beberapa saat
-const handleAutoGroupInput = () => {
-  clearGroupTypingTimeout()
-
-  groupTypingTimeout = window.setTimeout(() => {
-    commitCurrentGroupInput()
-  }, 800) // ubah ke 500 kalau mau lebih cepat
-}
-
-// Commit input saat auto timeout / blur / sebelum submit
+// Commit input saat Enter / sebelum submit
 const commitCurrentGroupInput = () => {
-  clearGroupTypingTimeout()
-
   const value = newGroup.value.trim()
   if (!value) return
 
@@ -278,7 +249,7 @@ const removeGroup = (index: number) => {
 }
 
 const handleSubmit = () => {
-  // pastikan input terakhir yang belum sempat auto-commit ikut tersimpan
+  // pastikan input terakhir yang belum disimpan ikut tersimpan
   if (newGroup.value.trim()) {
     commitCurrentGroupInput()
   }

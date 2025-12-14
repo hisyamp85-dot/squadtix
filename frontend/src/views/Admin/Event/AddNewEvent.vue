@@ -109,7 +109,7 @@
             type="text"
             class="w-full border rounded p-2"
             placeholder="Type category name and press Enter to add"
-            @keydown.enter="commitCurrentCategoryInput"
+            @keydown.enter.prevent="commitCurrentCategoryInput"
             @keydown.backspace="handleBackspaceCategory"
           />
           <p class="mt-1 text-xs text-gray-500">

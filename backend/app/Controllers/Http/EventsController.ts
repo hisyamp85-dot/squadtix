@@ -35,7 +35,7 @@ export default class EventsController {
       id_transaction: barcode.id_transaction || null,
 
 
-      ukuran_baju: barcode.ukuran_baju || null,
+      ukuran_jaket: barcode.ukuran_jaket || null,
       instansi: barcode.instansi || null,
       kota: barcode.kota || null,
       email: barcode.email || null,
@@ -514,7 +514,7 @@ export default class EventsController {
           'qrcode',
           'name',
           'instansi',
-          'ukuran_baju',
+          'ukuran_jaket',
           'kota',
           'email',
           'no_hp',
@@ -544,7 +544,7 @@ export default class EventsController {
         qrcode: qr.qrcode,
         name: qr.name,
         instansi: qr.instansi,
-        ukuran_baju: qr.ukuran_baju,
+        ukuran_jaket: qr.ukuran_jaket,
         kota: qr.kota,
         email: qr.email,
         no_hp: qr.no_hp,
@@ -662,7 +662,7 @@ export default class EventsController {
           name: row.name,
           other_data: row.other_data || null,
           id_transaction: row.id_transaction || null,
-          ukuran_baju: row.ukuran_baju || '',
+          ukuran_jaket: row.ukuran_jaket || '',
           instansi: row.instansi || '',
           kota: row.kota || '',
           email: row.email || '',
@@ -795,7 +795,7 @@ export default class EventsController {
       name,
       other_data,
       id_transaction,
-      ukuran_baju,
+      ukuran_jaket,
       instansi,
       kota,
       email,
@@ -809,7 +809,7 @@ export default class EventsController {
       'name',
       'other_data',
       'id_transaction',
-      'ukuran_baju',
+      'ukuran_jaket',
       'instansi',
       'kota',
       'email',
@@ -849,7 +849,7 @@ export default class EventsController {
       categoryQrcode.name = name
       categoryQrcode.other_data = other_data || null
       categoryQrcode.id_transaction = id_transaction || null
-      categoryQrcode.ukuran_baju = ukuran_baju || ''
+      categoryQrcode.ukuran_jaket = ukuran_jaket || ''
       categoryQrcode.instansi = instansi || ''
       categoryQrcode.kota = kota || ''
       categoryQrcode.email = email || ''

@@ -10,7 +10,7 @@ export default class UsersController {
     try {
       // Jangan kirim password ke frontend
       const users = await User.query().select(
-        'id',
+        'id_user',
         'name',
         'username',
         'email',
@@ -29,52 +29,72 @@ export default class UsersController {
   // ========================================================================
   //  CREATE USER
   // ========================================================================
-  public async store({ request, response }: HttpContextContract) {
-    try {
-      const data = request.only(['name', 'username', 'email', 'password', 'role', 'status'])
+ public async store({ request, response }: HttpContextContract) {
+  try {
+    const data = request.only([
+      'name',
+      'username',
+      'email',
+      'password',
+      'role',
+      'status',
+    ])
 
-      if (!data.name || !data.username || !data.email || !data.password || !data.role || !data.status) {
-        return response.status(400).json({ error: 'All fields are required' })
-      }
-
-      // Cek unik username & email (optional tapi bagus)
-      const existingUsername = await User.findBy('username', data.username)
-      if (existingUsername) {
-        return response.status(409).json({ error: 'Username already taken' })
-      }
-
-      const existingEmail = await User.findBy('email', data.email)
-      if (existingEmail) {
-        return response.status(409).json({ error: 'Email already registered' })
-      }
-
-      // Hash password
-      const hashedPassword = await Hash.make(data.password)
-
-      const user = await User.create({
-        name: data.name,
-        username: data.username,
-        email: data.email,
-        password: hashedPassword,
-        role: data.role,
-        status: data.status,
-      })
-
-      // Jangan kirim password balik
-      return response.status(201).json({
-        id: user.id,
-        name: user.name,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        status: user.status,
-      })
-    } catch (err) {
-      console.error('Failed to create user:', err)
-      const message = err instanceof Error ? err.message : 'Unknown error'
-      return response.status(500).json({ error: message })
+    // ================= VALIDATION =================
+    if (
+      !data.name ||
+      !data.username ||
+      !data.email ||
+      !data.password ||
+      !data.role ||
+      !data.status
+    ) {
+      return response.badRequest({ error: 'All fields are required' })
     }
+
+    if (data.password.length < 6) {
+      return response.badRequest({
+        error: 'Password must be at least 6 characters',
+      })
+    }
+
+    const existingUsername = await User.findBy('username', data.username)
+    if (existingUsername) {
+      return response.conflict({ error: 'Username already taken' })
+    }
+
+    const existingEmail = await User.findBy('email', data.email)
+    if (existingEmail) {
+      return response.conflict({ error: 'Email already registered' })
+    }
+
+    // ================= CREATE USER =================
+    const user = await User.create({
+      name: data.name,
+      username: data.username,
+      email: data.email,
+      password: await Hash.make(data.password), // 🔐 ARGON2
+      role: data.role,
+      status: data.status.toLowerCase() === 'active' ? 'Active' : 'Inactive',
+    })
+
+    // ================= RESPONSE =================
+    return response.created({
+      id: user.id,
+      name: user.name,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      status: user.status,
+    })
+  } catch (err) {
+    console.error('Failed to create user:', err)
+    return response.internalServerError({
+      error: err instanceof Error ? err.message : 'Unknown error',
+    })
   }
+}
+
 
   // ========================================================================
   //  DELETE USER
@@ -117,7 +137,7 @@ export default class UsersController {
         .filter((r): r is string => !!r)
         .map((role) => role.charAt(0).toUpperCase() + role.slice(1).toLowerCase())
 
-      const defaultRoles = ['Admin', 'User', 'Redemption', 'Scan Wristband']
+      const defaultRoles = ['Admin', 'User', 'Scanner']
 
       const allRoles = [...new Set([...defaultRoles, ...dbRoleNames])]
 
@@ -168,45 +188,45 @@ export default class UsersController {
   // ========================================================================
   //  UPDATE USER
   // ========================================================================
-  public async update({ params, request, response }: HttpContextContract) {
-    try {
-      const id = params.id
-      if (!id) {
-        return response.status(400).json({ error: 'Invalid user ID' })
-      }
-
-      const user = await User.find(id)
-      if (!user) {
-        return response.status(404).json({ error: 'User not found' })
-      }
-
-      const data = request.only(['name', 'username', 'email', 'password', 'role', 'status'])
-
-      // Kalau password diisi → hash baru, kalau kosong → abaikan (pakai yang lama)
-      if (data.password && data.password.trim() !== '') {
-        user.password = await Hash.make(data.password)
-      }
-
-      // Hapus password dari merge supaya tidak overwrite jadi string kosong
-      const { password, ...rest } = data
-
-      user.merge(rest)
-      await user.save()
-
-      return response.status(200).json({
-        id: user.id,
-        name: user.name,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        status: user.status,
-      })
-    } catch (err) {
-      console.error('Failed to update user:', err)
-      const message = err instanceof Error ? err.message : 'Unknown error'
-      return response.status(500).json({ error: message })
+public async update({ params, request, response }: HttpContextContract) {
+  try {
+    const user = await User.findBy('id_user', params.id)
+    if (!user) {
+      return response.notFound({ message: 'User not found' })
     }
+
+    const { password, ...rest } = request.only([
+      'name',
+      'username',
+      'email',
+      'password',
+      'role',
+      'status',
+    ])
+
+    user.merge(rest)
+
+    if (password && password.trim().length >= 6) {
+      user.password = await Hash.make(password)
+    }
+
+    await user.save()
+
+    return response.ok({
+      id: user.id,
+      username: user.username,
+      status: user.status,
+    })
+  } catch (error) {
+    console.error(error)
+    return response.internalServerError({
+      message: 'Failed to update user',
+    })
   }
+}
+
+
+
 
   // ========================================================================
   //  SHOW USER (DETAIL)
@@ -242,54 +262,10 @@ export default class UsersController {
   // ========================================================================
   //  LOGIN
   // ========================================================================
-  public async login({ request, response }: HttpContextContract) {
-    try {
-      const { username, password } = request.only(['username', 'password'])
 
-      if (!username || !password) {
-        return response.status(400).json({ error: 'Username and password are required' })
-      }
 
-      const user = await User.findBy('username', username)
 
-      if (!user) {
-        return response.status(401).json({ error: 'Invalid credentials' })
-      }
 
-      // Optional: kalau mau blokir user non-aktif
-      if (user.status && user.status.toLowerCase() !== 'active') {
-        return response.status(403).json({ error: 'User is not active' })
-      }
-
-      let isValidPassword = false
-
-      // Support 2 jenis password:
-      // - hashed (scrypt / driver default Adonis)
-      // - plain text lama
-      if (user.password.startsWith('$scrypt$')) {
-        isValidPassword = await Hash.verify(user.password, password)
-      } else {
-        isValidPassword = user.password === password
-      }
-
-      if (!isValidPassword) {
-        return response.status(401).json({ error: 'Invalid credentials' })
-      }
-
-      return response.status(200).json({
-        id: user.id,
-        name: user.name,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        status: user.status,
-      })
-    } catch (err) {
-      console.error('Failed to login:', err)
-      const message = err instanceof Error ? err.message : 'Unknown error'
-      return response.status(500).json({ error: message })
-    }
-  }
 
   // ========================================================================
   //  COUNT USERS (UNTUK DASHBOARD)
@@ -306,4 +282,7 @@ export default class UsersController {
       return response.status(500).json({ error: message })
     }
   }
+
+ 
+
 }

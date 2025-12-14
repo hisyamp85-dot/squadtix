@@ -26,27 +26,27 @@ Route.get('/ping', async () => {
 
 // ==================== USERS ====================
 
-Route.get('/users', 'UsersController.index')
+//Route.get('/users', 'UsersController.index')
 Route.post('/users', 'UsersController.store')
-Route.post('/users/login', 'UsersController.login')
+//Route.post('/users/login', 'UsersController.login')
 Route.get('/users/roles', 'UsersController.roles')
 Route.get('/users/projects', 'UsersController.projects')
 
 Route.get('/users/check-username', 'UsersController.checkUsername')
 Route.get('/users/check-email', 'UsersController.checkEmail')
-Route.get('/users/count', 'UsersController.count')
-Route.get('/users/:id', 'UsersController.show')
-Route.put('/users/:id', 'UsersController.update')
-Route.delete('/users/:id', 'UsersController.delete')
+//Route.get('/users/count', 'UsersController.count')
+//Route.get('/users/:id', 'UsersController.show')
+//Route.put('/users/:id', 'UsersController.update')
+//Route.delete('/users/:id', 'UsersController.delete')
 
 // ==================== EVENTS + CATEGORIES ====================
 
-Route.get('/events', 'EventsController.index')
-Route.post('/events', 'EventsController.store')
-Route.get('/events/count', 'EventsController.count')
-Route.get('/events/:eventId', 'EventsController.show')
-Route.put('/events/:eventId', 'EventsController.update')
-Route.delete('/events/:eventId', 'EventsController.deleteEvent')
+//Route.get('/events', 'EventsController.index')
+//Route.post('/events', 'EventsController.store')
+//Route.get('/events/count', 'EventsController.count')
+//Route.get('/events/:eventId', 'EventsController.show')
+//Route.put('/events/:eventId', 'EventsController.update')
+//Route.delete('/events/:eventId', 'EventsController.deleteEvent')
 
 Route.get('/events/:eventId/categories', 'EventsController.getCategories')
 Route.post('/events/:eventId/categories', 'EventsController.addCategories')
@@ -145,6 +145,42 @@ Route.get('/member-users/:id', 'MemberUsersController.show')
 Route.put('/member-users/:id', 'MemberUsersController.update')
 Route.delete('/member-users/:id', 'MemberUsersController.delete')
 Route.delete('/member-users', 'MemberUsersController.bulkDelete')
+
+// ==================== Android Login ====================
+
+// ==================== AUTH ====================
+
+Route.post('/login', 'AuthController.login')
+Route.post('/logout', 'AuthController.logout').middleware('auth:api')
+Route.get('/me', 'AuthController.me').middleware('auth:api')
+
+
+//Route.post('/login', 'UsersController.login')
+//Route.post('/logout', 'UsersController.logout').middleware('auth:api')
+
+Route.group(() => {
+  
+  Route.get('/users', 'UsersController.index')
+  Route.get('/users/count', 'UsersController.count')
+  Route.get('/users/:id', 'UsersController.show')
+  Route.put('/users/:id', 'UsersController.update')
+  Route.delete('/users/:id', 'UsersController.delete')
+
+  // EVENTS
+  Route.get('/events', 'EventsController.index')
+  Route.post('/events', 'EventsController.store')
+  Route.get('/events/count', 'EventsController.count')
+  Route.get('/events/:eventId', 'EventsController.show')
+  Route.put('/events/:eventId', 'EventsController.update')
+  Route.delete('/events/:eventId', 'EventsController.deleteEvent')
+
+
+
+
+}).middleware(['auth:api'])
+
+
+
 
 // ROOT
 

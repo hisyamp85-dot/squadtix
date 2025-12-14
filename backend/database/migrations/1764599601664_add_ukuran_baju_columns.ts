@@ -1,7 +1,7 @@
 import BaseSchema from '@ioc:Adonis/Lucid/Schema'
 
 export default class extends BaseSchema {
-  protected tableName = 'add_ukuran_baju_columns'
+  protected tableName = 'add_ukuran_jaket_columns'
 
   public async up () {
     this.schema.createTable(this.tableName, (table) => {

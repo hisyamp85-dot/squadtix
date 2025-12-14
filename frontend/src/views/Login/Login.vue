@@ -315,6 +315,10 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/lib/axios'
 
+defineOptions({
+  name: 'LoginView',
+})
+
 const router = useRouter()
 
 const username = ref('')
@@ -327,8 +331,14 @@ type NormalizedRole = 'admin' | 'user'
 
 interface LoginUser {
   id: number | string
-  role: NormalizedRole
-  [key: string]: any
+  role?: string
+  [key: string]: unknown
+}
+
+interface LoginResponse {
+  type: string
+  token: string
+  user: LoginUser
 }
 
 const togglePasswordVisibility = () => {
@@ -336,55 +346,53 @@ const togglePasswordVisibility = () => {
 }
 
 function normalizeRole(rawRole: unknown): NormalizedRole {
-  const r = String(rawRole ?? '').toLowerCase().trim()
-
-  if (['admin', 'administrator', 'superadmin'].includes(r)) {
-    return 'admin'
-  }
-  return 'user'
+  const r = String(rawRole ?? '').toLowerCase()
+  return ['admin', 'administrator', 'superadmin'].includes(r)
+    ? 'admin'
+    : 'user'
 }
 
-const handleSubmit = async () => {
+const handleSubmit = async (): Promise<void> => {
   errorMessage.value = ''
   loading.value = true
 
   try {
-    const res = await api.post('/users/login', {
+    const res = await api.post<LoginResponse>('/login', {
       username: username.value,
       password: password.value,
     })
 
-    const data: any = res.data ?? {}
-    const rawUser: any = data.user ?? data.data?.user ?? data
+    const { token, type, user } = res.data
 
-    const rawRole =
-      rawUser.role ?? rawUser.role_name ?? rawUser.role_id ?? rawUser.group
-
-    const normalizedRole = normalizeRole(rawRole)
-
-    const user: LoginUser = {
-      ...rawUser,
-      role: normalizedRole,
-    }
-
+    // 🔐 SIMPAN TOKEN (KONSISTEN DENGAN INTERCEPTOR)
+    localStorage.setItem('token', token)
+    localStorage.setItem('token_type', type)
     localStorage.setItem('user', JSON.stringify(user))
 
-    if (user.role === 'admin') {
-      await router.push('/')
+    const role = normalizeRole(user.role)
+
+    await router.push(role === 'admin' ? '/' : `/${user.id}`)
+  } catch (err: unknown) {
+    if (typeof err === 'object' && err !== null && 'response' in err) {
+      const e = err as {
+        response?: { data?: { message?: string } }
+      }
+
+      errorMessage.value =
+        e.response?.data?.message ??
+        'Login gagal. Periksa username / password.'
     } else {
-      await router.push(`/${user.id}`)
+      errorMessage.value = 'Login gagal.'
     }
-  } catch (error: any) {
-    const message =
-      error?.response?.data?.message ||
-      error?.response?.data?.error ||
-      'Login gagal. Periksa username / password Anda.'
-    errorMessage.value = message
   } finally {
     loading.value = false
   }
 }
+
 </script>
+
+
+
 
 <style scoped>
 /* page fade-in */

@@ -217,7 +217,7 @@ import api from '@/lib/axios'
 import { toast } from 'vue3-toastify'
 import Button from '@/components/ui/Button.vue'
 
-type Role = 'Admin' | 'User' | 'Redemption' | 'Scan Wristband' | string
+type Role = 'Admin' | 'User' | 'Scanner' | string
 
 interface StoredUser {
   id: number | string

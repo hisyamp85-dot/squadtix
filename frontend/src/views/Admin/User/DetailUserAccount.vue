@@ -203,7 +203,7 @@ const { isExpanded } = useSidebar()
 const localUser = ref<User | null>(null)
 const showDeleteModal = ref(false)
 const showPassword = ref(false)
-const roles = ref<string[]>(['Admin', 'User', 'Redemption', 'Scan Wristband'])
+const roles = ref<string[]>(['Admin', 'User', 'Scanner'])
 const statuses = ref<string[]>(['Active', 'Inactive'])
 
 

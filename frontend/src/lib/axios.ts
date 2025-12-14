@@ -1,30 +1,31 @@
-import axios from "axios";
+import axios from 'axios'
 
-/**
- * Ambil baseURL dari Vite env
- * Contoh: https://squadtix.konsolnasbawasluri.com
- */
 const baseURL =
-  (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/+$/, "") ||
-  window.location.origin;
+  (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/+$/, '') ||
+  window.location.origin
 
 const api = axios.create({
   baseURL,
-  withCredentials: true, // kalau pakai session/cookie
   headers: {
-    Accept: "application/json",
-    "Content-Type": "application/json",
-    "X-Requested-With": "XMLHttpRequest",
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
   },
   timeout: 30000,
-});
+})
 
-api.interceptors.response.use(
-  (response: any) => response,
-  (error: any) => {
-    console.error("API Error:", error.response || error);
-    return Promise.reject(error);
+// 🔐 Inject token ke header
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('auth_token')
+  const type = localStorage.getItem('token_type') ?? 'Bearer'
+
+  if (token) {
+    config.headers = {
+      ...config.headers,
+      Authorization: `${type} ${token}`,
+    }
   }
-);
 
-export default api;
+  return config
+})
+
+export default api

@@ -189,7 +189,7 @@ const togglePasswordVisibility = () => {
   showPassword.value = !showPassword.value
 }
 
-const roles = ref<string[]>(['Admin', 'User','Redemption','Scan Wristband'])
+const roles = ref<string[]>(['Admin', 'User','Scanner'])
 const statuses = ref<string[]>(['Active', 'Inactive'])
 
 const searchQuery = ref('')

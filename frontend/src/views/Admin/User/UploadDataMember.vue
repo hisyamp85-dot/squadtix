@@ -178,7 +178,7 @@ function triggerFileInput() {
 }
 
 function downloadTemplate() {
-  const csvContent = 'username,password,section,status\ntest1,password,Redemption,Active\ntest2,password,Scan Gate,Inactive\n'
+  const csvContent = 'username,password,section,status\ntest1,password,Scanner,Active\ntest2,password,Scanner,Inactive\n'
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
   const link = document.createElement('a')
   const url = URL.createObjectURL(blob)
