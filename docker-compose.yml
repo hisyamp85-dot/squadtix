@@ -1,0 +1,47 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: squadtix-db
+    environment:
+      POSTGRES_DB: squadtix
+      POSTGRES_USER: squadtix
+      POSTGRES_PASSWORD: squadtixpass
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: squadtix-backend
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3333
+      APP_KEY: ${APP_KEY}
+
+      DRIVE_DISK: local   # ✅ PINDAH KE SINI
+
+      DB_CONNECTION: pg
+      PG_HOST: db
+      PG_PORT: 5432
+      PG_USER: squadtix
+      PG_PASSWORD: squadtixpass
+      PG_DB_NAME: squadtix
+    depends_on:
+      - db
+    ports:
+      - "3333:3333"
+
+  web:
+    build:
+      context: .
+      dockerfile: deploy/web/Dockerfile
+      args:
+        VITE_API_URL: /api
+    container_name: squadtix-web
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+volumes:
+  db_data:

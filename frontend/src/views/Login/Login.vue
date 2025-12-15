@@ -366,7 +366,8 @@ const handleSubmit = async (): Promise<void> => {
 
     // 🔐 SIMPAN TOKEN (KONSISTEN DENGAN INTERCEPTOR)
     localStorage.setItem('token', token)
-    localStorage.setItem('token_type', type)
+    localStorage.setItem('auth_token', token) // fallback key
+    localStorage.setItem('token_type', type || 'Bearer')
     localStorage.setItem('user', JSON.stringify(user))
 
     const role = normalizeRole(user.role)

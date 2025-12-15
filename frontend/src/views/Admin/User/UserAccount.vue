@@ -51,8 +51,16 @@ onMounted(async () => {
 
     // fallback hardcoded fetch
     try {
-      console.log("👉 Coba fallback fetch hardcoded http://127.0.0.1:3333/users ...")
-      const res = await fetch("http://127.0.0.1:3333/users")
+      console.log("👉 Coba fallback fetch ke endpoint /users ...")
+      const token = localStorage.getItem('token') ?? localStorage.getItem('auth_token')
+      const base = (api.defaults.baseURL ?? '').replace(/\/+$/, '')
+      const url = base ? `${base}/users` : '/users'
+      const scheme = token ? 'Bearer' : null
+      const res = await fetch(url, {
+        headers: token
+          ? { Authorization: `${scheme ?? 'Bearer'} ${token}` }
+          : undefined,
+      })
       const data = await res.json()
       console.log("✅ Response dari hardcode fetch:", data)
       users.value = data

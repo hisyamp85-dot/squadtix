@@ -12,31 +12,28 @@ export default class extends BaseSeeder {
       return
     }
 
-    // Create sample barcodes with id_transaction
+    // Create sample barcodes
     await CategoryQrcode.createMany([
       {
         event_id: event.eventId,
         event_category_id: event.eventCategoryId,
         qrcode: 'ABC123',
         name: 'John Doe',
-        other_data: 'VIP Guest',
-        id_transaction: 'TXN001'
+        other_data: 'VIP Guest'
       },
       {
         event_id: event.eventId,
         event_category_id: event.eventCategoryId,
         qrcode: 'ABC124',
         name: 'Jane Smith',
-        other_data: 'VIP Guest',
-        id_transaction: 'TXN001'
+        other_data: 'VIP Guest'
       },
       {
         event_id: event.eventId,
         event_category_id: event.eventCategoryId,
         qrcode: 'DEF456',
         name: 'Bob Johnson',
-        other_data: 'Regular Guest',
-        id_transaction: 'TXN002'
+        other_data: 'Regular Guest'
       }
     ])
   }

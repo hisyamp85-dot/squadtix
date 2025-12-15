@@ -32,19 +32,6 @@ export default class EventsController {
       eventName: eventRecord?.eventName ?? null,
       categoryName: eventRecord?.categoryName ?? null,
       groupName: groupName ?? null,
-      id_transaction: barcode.id_transaction || null,
-
-
-      ukuran_jaket: barcode.ukuran_jaket || null,
-      instansi: barcode.instansi || null,
-      kota: barcode.kota || null,
-      email: barcode.email || null,
-      no_hp: barcode.no_hp || null,
-      provinsi: barcode.provinsi || null,
-      jabatan: barcode.jabatan || null,
-      status_kehadiran: barcode.status_kehadiran || null,
-      tanggal_kehadiran: barcode.tanggal_kehadiran?.toFormat('yyyy-MM-dd') || null,
-
       statusMessage:
         status === 'Redeemed'
           ? 'Ticket has already been redeemed'
@@ -510,18 +497,8 @@ export default class EventsController {
         .where('event_category_id', eventCategoryId)
         .select(
           'id',
-          'id_transaction',
           'qrcode',
           'name',
-          'instansi',
-          'ukuran_jaket',
-          'kota',
-          'email',
-          'no_hp',
-          'provinsi',
-          'jabatan',
-          'status_kehadiran',
-          'tanggal_kehadiran',
           'other_data'
         )
 
@@ -540,18 +517,8 @@ export default class EventsController {
 
       const qrcodeList = qrcodes.map((qr) => ({
         id: qr.id,
-        id_transaction: qr.id_transaction,
         qrcode: qr.qrcode,
         name: qr.name,
-        instansi: qr.instansi,
-        ukuran_jaket: qr.ukuran_jaket,
-        kota: qr.kota,
-        email: qr.email,
-        no_hp: qr.no_hp,
-        provinsi: qr.provinsi,
-        jabatan: qr.jabatan,
-        status_kehadiran: qr.status_kehadiran,
-        tanggal_kehadiran: qr.tanggal_kehadiran?.toFormat('yyyy-MM-dd') || null,
         other_data: qr.other_data,
         status: statusMap.get(qr.id) || 'Pending',
         redeemed_at: redeemedAtMap.get(qr.id)?.toISO() || null,
@@ -661,16 +628,6 @@ export default class EventsController {
           event_category_id: eventCategoryId,
           name: row.name,
           other_data: row.other_data || null,
-          id_transaction: row.id_transaction || null,
-          ukuran_jaket: row.ukuran_jaket || '',
-          instansi: row.instansi || '',
-          kota: row.kota || '',
-          email: row.email || '',
-          no_hp: row.no_hp || '',
-          provinsi: row.provinsi || null,
-          jabatan: row.jabatan || null,
-          status_kehadiran: row.status_kehadiran || null,
-          tanggal_kehadiran: row.tanggal_kehadiran ? DateTime.fromFormat(row.tanggal_kehadiran, 'yyyy-MM-dd') : null,
         }
       })
       console.log('Prepared data for insertion:', qrcodesData.length, 'rows')
@@ -794,30 +751,10 @@ export default class EventsController {
       qrcode,
       name,
       other_data,
-      id_transaction,
-      ukuran_jaket,
-      instansi,
-      kota,
-      email,
-      no_hp,
-      provinsi,
-      jabatan,
-      status_kehadiran,
-      tanggal_kehadiran,
     } = request.only([
       'qrcode',
       'name',
       'other_data',
-      'id_transaction',
-      'ukuran_jaket',
-      'instansi',
-      'kota',
-      'email',
-      'no_hp',
-      'provinsi',
-      'jabatan',
-      'status_kehadiran',
-      'tanggal_kehadiran',
     ])
 
     try {
@@ -848,16 +785,6 @@ export default class EventsController {
       categoryQrcode.event_category_id = eventCategoryId
       categoryQrcode.name = name
       categoryQrcode.other_data = other_data || null
-      categoryQrcode.id_transaction = id_transaction || null
-      categoryQrcode.ukuran_jaket = ukuran_jaket || ''
-      categoryQrcode.instansi = instansi || ''
-      categoryQrcode.kota = kota || ''
-      categoryQrcode.email = email || ''
-      categoryQrcode.no_hp = no_hp || ''
-      categoryQrcode.provinsi = provinsi || null
-      categoryQrcode.jabatan = jabatan || null
-      categoryQrcode.status_kehadiran = status_kehadiran || null
-      categoryQrcode.tanggal_kehadiran = tanggal_kehadiran ? DateTime.fromFormat(tanggal_kehadiran, 'yyyy-MM-dd') : null
       await categoryQrcode.save()
 
       return response.created({ message: 'Barcode added successfully' })
@@ -909,13 +836,7 @@ export default class EventsController {
 
       let barcodes: CategoryQrcode[] = []
 
-      if (barcode.id_transaction) {
-        barcodes = await CategoryQrcode.query()
-          .where('event_id', eventId)
-          .where('id_transaction', barcode.id_transaction)
-      } else {
-        barcodes = [barcode]
-      }
+      barcodes = [barcode]
 
       const barcodeIds = barcodes.map((b) => b.id)
       const redeemedLogs = await CheckinLog.query()

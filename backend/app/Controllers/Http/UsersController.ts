@@ -8,17 +8,29 @@ export default class UsersController {
   // ========================================================================
   public async index({ response }: HttpContextContract) {
     try {
-      // Jangan kirim password ke frontend
-      const users = await User.query().select(
-        'id_user',
-        'name',
-        'username',
-        'email',
-        'role',
-        'status'
-      )
+      // 1. Paksa browser untuk TIDAK menyimpan cache (selalu ambil data terbaru)
+      response.header('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+      response.header('Pragma', 'no-cache')
+      response.header('Expires', '0')
 
-      return response.status(200).json(users)
+      // Ambil semua data user, urutkan dari yang terbaru
+      const users = await User.query().orderBy('id_user', 'desc')
+
+      // Map data secara manual untuk memastikan password tidak terkirim
+      // dan format data konsisten
+      const serialized = users.map((user) => ({
+        id: user.id,
+        id_user: user.id, // Support untuk frontend yang butuh id_user
+        name: user.name,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        status: user.status,
+        created_at: user.createdAt ? user.createdAt.toISO() : null,
+        updated_at: user.updatedAt ? user.updatedAt.toISO() : null,
+      }))
+
+      return response.status(200).json(serialized)
     } catch (err) {
       console.error('Failed to fetch users:', err)
       const message = err instanceof Error ? err.message : 'Unknown error'
@@ -73,7 +85,7 @@ export default class UsersController {
       name: data.name,
       username: data.username,
       email: data.email,
-      password: await Hash.make(data.password), // 🔐 ARGON2
+      password: data.password, // ❌ Jangan hash manual di sini, biarkan Model Hook yang menangani agar tidak double-hash
       role: data.role,
       status: data.status.toLowerCase() === 'active' ? 'Active' : 'Inactive',
     })
@@ -207,7 +219,7 @@ public async update({ params, request, response }: HttpContextContract) {
     user.merge(rest)
 
     if (password && password.trim().length >= 6) {
-      user.password = await Hash.make(password)
+      user.password = password // ❌ Jangan hash manual, biarkan Model Hook bekerja
     }
 
     await user.save()
