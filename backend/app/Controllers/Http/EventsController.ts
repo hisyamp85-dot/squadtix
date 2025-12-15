@@ -48,8 +48,8 @@ export default class EventsController {
       statusMessage:
         status === 'Redeemed'
           ? 'Ticket has already been redeemed'
-          : status === 'Recheckin'
-          ? 'Ticket is ready for recheckin'
+          : status === 'Re Redeemed'
+          ? 'Ticket is ready for re redemption'
           : 'Ticket is Pending and ready for redemption',
     }
   }
@@ -953,7 +953,10 @@ export default class EventsController {
       })
 
       const barcodeResponses = barcodes.map((b) => {
-        const status = statusMap.get(b.id) || 'Pending'
+        let status = statusMap.get(b.id) || 'Pending'
+        if (status === 'Recheckin') {
+          status = 'Re Redeemed'
+        }
         const scannedAt = scannedAtMap.get(b.id) || null
         const redeemedBy = redeemedByMap.get(b.id) || null
         const groupName = groupNameMap.get(b.event_category_id) || null
@@ -992,7 +995,7 @@ export default class EventsController {
         .where('category_qrcode_id', barcode.id)
         .first()
 
-      const isRecheckin = !!existingLog
+      const isReRedeemed = !!existingLog
       const scannedBy = redeemedBy
 
       const log = await CheckinLog.create({
@@ -1002,7 +1005,7 @@ export default class EventsController {
         eventCategoryId: barcode.event_category_id,
         scannedBy: scannedBy,
         scannedAt: DateTime.now(),
-        status: isRecheckin ? 'Recheckin' : 'Redeemed',
+        status: isReRedeemed ? 'Re Redeemed' : 'Redeemed',
       })
 
       const eventRecord = await Event.query()
@@ -1058,16 +1061,21 @@ export default class EventsController {
       })
 
       const checkin = statusCounts['checkin'] || statusCounts['Checkin'] || 0
-      const recheckin = statusCounts['recheckin'] || statusCounts['Recheckin'] || 0
+      const reRedeemed =
+        statusCounts['Re Redeemed'] ||
+        statusCounts['re redeemed'] ||
+        statusCounts['Recheckin'] ||
+        statusCounts['recheckin'] ||
+        0
       const checkout = statusCounts['checkout'] || statusCounts['Checkout'] || 0
       const recheckout = statusCounts['recheckout'] || statusCounts['Recheckout'] || 0
 
-      const totalCheckins = checkin + recheckin + checkout + recheckout
+      const totalCheckins = checkin + reRedeemed + checkout + recheckout
       const available = totalTickets - totalCheckins
 
       return response.ok({
         checkin,
-        recheckin,
+        reRedeemed,
         checkout,
         recheckout,
         totalTickets,
@@ -1078,4 +1086,24 @@ export default class EventsController {
       return response.status(500).json({ error: 'Failed to fetch category stats' })
     }
   }
+  // ========================================================================
+//  FLUTTER: EVENT MILIK USER LOGIN
+// ========================================================================
+public async myEvents({ auth, response }: HttpContextContract) {
+  const user = auth.user!
+
+  // Ambil event unik (group by eventId)
+  const events = await Event.query()
+    .where('id_user', user.id)
+    .select('eventId', 'eventName')
+    .groupBy('eventId', 'eventName')
+
+  return response.ok(
+    events.map((e) => ({
+      event_id: e.eventId,
+      event_name: e.eventName,
+    }))
+  )
+}
+
 }

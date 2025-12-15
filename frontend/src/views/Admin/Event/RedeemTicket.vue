@@ -235,9 +235,7 @@
                             {{
                               isRedeeming
                                 ? 'Processing...'
-                                : ticketData.status === 'Recheckin'
-                                ? 'Recheckin'
-                                : 'Redeem'
+                                : redeemButtonLabel(ticketData)
                             }}
                           </button>
                           <span v-else class="text-gray-400 dark:text-gray-500">—</span>
@@ -283,9 +281,7 @@
                             {{
                               isRedeeming
                                 ? 'Processing...'
-                                : relatedTicket.status === 'Recheckin'
-                                ? 'Recheckin'
-                                : 'Redeem'
+                                : redeemButtonLabel(relatedTicket)
                             }}
                           </button>
                           <span v-else class="text-gray-400 dark:text-gray-500">—</span>
@@ -344,7 +340,7 @@ onMounted(() => {
 })
 
 type BarcodeStatus = 'Pending' | 'Redeemed' | 'Expired'
-type TicketStatus = BarcodeStatus | 'Invalid' | 'Recheckin'
+type TicketStatus = BarcodeStatus | 'Invalid' | 'Re Redeemed'
 type RecentScanStatus = TicketStatus | 'Processing...'
 
 interface TicketData {
@@ -551,8 +547,8 @@ const getStatusMessage = (status: TicketStatus) => {
       return 'Ticket is valid and ready for redemption'
     case 'Redeemed':
       return 'Ticket has already been redeemed'
-    case 'Recheckin':
-      return 'Ticket is ready for recheckin'
+    case 'Re Redeemed':
+      return 'Ticket is ready for re redemption'
     case 'Expired':
       return 'Ticket has expired'
     case 'Invalid':
@@ -571,12 +567,14 @@ const formatDate = (dateString: string | null) => {
 }
 
 const statusBadgeClasses = (status: string) => {
-  switch (status.toLowerCase()) {
+  const normalized = status.replace(/\s+/g, '').toLowerCase()
+  switch (normalized) {
     case 'pending':
       return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
     case 'redeemed':
       return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-    case 'recheckin':
+    case 'reredeeemed':
+
       return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
     case 'expired':
       return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
@@ -666,9 +664,9 @@ const attachLimitMessage = (
   if (used >= entryAmount) {
     newStatus = 'Redeemed'
   } else {
-    // Masih ada jatah: kalau backend kasih 'Redeemed', kita ganti ke Recheckin
+    // Masih ada jatah: kalau backend kasih 'Redeemed', kita ganti ke Re Redeemed
     if (ticket.status === 'Redeemed') {
-      newStatus = 'Recheckin'
+      newStatus = 'Re Redeemed'
     }
   }
 
@@ -709,7 +707,7 @@ const validateTicket = async (code: string) => {
 
     updateRecentScanStatus(code, ticketData.value.status)
 
-    if (ticketData.value.status === 'Pending' || ticketData.value.status === 'Recheckin') {
+    if (ticketData.value.status === 'Pending' || ticketData.value.status === 'Re Redeemed') {
       toast.success(ticketData.value.statusMessage || 'Ticket validated successfully!')
     } else if (ticketData.value.status === 'Redeemed') {
       toast.info(ticketData.value.statusMessage || 'Ticket has already been redeemed.')
@@ -842,7 +840,7 @@ const redeemTicketById = async (ticketId: number) => {
       const baseTicket: TicketData = {
         ...target,
         redeemedAt: nowIso,
-        status: 'Recheckin',
+        status: 'Re Redeemed',
       }
 
       const newCount = used + 1
@@ -887,7 +885,7 @@ const canRedeemTicket = (ticket: TicketData): boolean => {
   // kalau tidak ada entry_amount dari backend
   return (
     ticket.status === 'Pending' ||
-    ticket.status === 'Recheckin' ||
+    ticket.status === 'Re Redeemed' ||
     ticket.status === 'Redeemed'
   )
 }
@@ -897,11 +895,19 @@ const canRedeem = computed(() => {
   return canRedeemTicket(ticketData.value)
 })
 
+const redeemButtonLabel = (ticket: TicketData | null): string => {
+  if (!ticket) return 'Redeem'
+  const used = getRedeemCount(ticket)
+  if (used > 0) return 'Re Redeemed'
+  if (ticket.status === 'Redeemed' || ticket.status === 'Re Redeemed') return 'Re Redeemed'
+  return 'Redeem'
+}
+
 // Button class
 const buttonClass = (status: string): string => {
   const baseClasses =
     'text-white px-3 py-1 text-sm font-medium rounded transition-colors disabled:bg-gray-400'
-  if (status === 'Recheckin' || status === 'Redeemed') {
+  if (status === 'Re Redeemed' || status === 'Redeemed') {
     return `bg-blue-600 hover:bg-blue-700 ${baseClasses}`
   } else {
     return `bg-green-600 hover:bg-green-700 ${baseClasses}`

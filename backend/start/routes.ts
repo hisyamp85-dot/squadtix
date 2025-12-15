@@ -151,8 +151,16 @@ Route.delete('/member-users', 'MemberUsersController.bulkDelete')
 // ==================== AUTH ====================
 
 Route.post('/login', 'AuthController.login')
-Route.post('/logout', 'AuthController.logout').middleware('auth:api')
-Route.get('/me', 'AuthController.me').middleware('auth:api')
+//Route.post('/logout', 'AuthController.logout').middleware('auth:api')
+//Route.get('/me', 'AuthController.me').middleware('auth:api')
+
+Route.group(() => {
+  // 🔥 Flutter / Mobile / Scanner
+  Route.get('/my-events', 'EventsController.myEvents')
+  Route.get('/me', 'AuthController.me')
+  Route.post('/logout', 'AuthController.logout')
+}).middleware(['auth:api'])
+
 
 
 //Route.post('/login', 'UsersController.login')
