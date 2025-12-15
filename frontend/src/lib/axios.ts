@@ -15,13 +15,13 @@ const api = axios.create({
 
 // 🔐 Inject token ke header
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('auth_token')
-  const type = localStorage.getItem('token_type') ?? 'Bearer'
+  const token = localStorage.getItem('token') ?? localStorage.getItem('auth_token')
+  const scheme = (localStorage.getItem('token_type') || 'Bearer').trim() || 'Bearer'
 
   if (token) {
     config.headers = {
       ...config.headers,
-      Authorization: `${type} ${token}`,
+      Authorization: `${scheme} ${token}`,
     }
   }
 

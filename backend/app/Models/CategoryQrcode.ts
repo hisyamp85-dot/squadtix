@@ -25,38 +25,6 @@ export default class CategoryQrcode extends BaseModel {
   @column()
   public other_data: string | null
 
-  @column()
-  public id_transaction: string | null
-  
-
-
-  @column()
-  public ukuran_jaket: string
-
-  @column()
-  public provinsi: string | null
-
-  @column()
-  public jabatan: string | null
-
-  @column()
-  public status_kehadiran: string | null
-
-  @column.dateTime()
-  public tanggal_kehadiran: DateTime | null
-
-  @column()
-  public instansi: string
-
-  @column()
-  public kota: string
-
-  @column()
-  public email: string
-
-  @column()
-  public no_hp: string
-
   @column.dateTime({ autoCreate: true })
   public created_at: DateTime
 
