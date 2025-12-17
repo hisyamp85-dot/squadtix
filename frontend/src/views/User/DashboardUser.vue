@@ -109,7 +109,7 @@
 
           <div class="flex flex-wrap items-center gap-3 animate-fade-up delay-1">
             <router-link
-              to="/user/:id/checkin"
+              to="/scanner"
               class="inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-xs font-medium text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
             >
               <span class="text-sm">▢</span>
@@ -890,3 +890,4 @@ const stopAutoSlide = () => {
   animation-delay: 0.2s !important;
 }
 </style>
+

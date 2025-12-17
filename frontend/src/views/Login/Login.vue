@@ -327,7 +327,8 @@ const showPassword = ref(false)
 const errorMessage = ref('')
 const loading = ref(false)
 
-type NormalizedRole = 'admin' | 'user'
+type NormalizedRole = 'admin' | 'user' | 'scanner'
+
 
 interface LoginUser {
   id: number | string
@@ -347,10 +348,11 @@ const togglePasswordVisibility = () => {
 
 function normalizeRole(rawRole: unknown): NormalizedRole {
   const r = String(rawRole ?? '').toLowerCase()
-  return ['admin', 'administrator', 'superadmin'].includes(r)
-    ? 'admin'
-    : 'user'
+  if (['admin', 'administrator', 'superadmin'].includes(r)) return 'admin'
+  if (r === 'scanner') return 'scanner'
+  return 'user'
 }
+
 
 const handleSubmit = async (): Promise<void> => {
   errorMessage.value = ''
@@ -371,8 +373,9 @@ const handleSubmit = async (): Promise<void> => {
     localStorage.setItem('user', JSON.stringify(user))
 
     const role = normalizeRole(user.role)
+    localStorage.setItem('role', role)
 
-    await router.push(role === 'admin' ? '/' : `/${user.id}`)
+    await router.replace('/')
   } catch (err: unknown) {
     if (typeof err === 'object' && err !== null && 'response' in err) {
       const e = err as {

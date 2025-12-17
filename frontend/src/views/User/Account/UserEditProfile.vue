@@ -272,16 +272,8 @@ const goBack = () => {
   const stored = localStorage.getItem('user')
   if (!stored) return router.push('/login')
 
-  const parsed = JSON.parse(stored)
-  // jika role User → redirect ke /user/:id/profile
-  if (parsed.role === 'User') {
-    router.push(`/user/${parsed.id}/profile`)
-  } else {
-    // jika admin → arahkan ke /profile biasa
-    router.push('/profile')
-  }
+  router.push('/profile')
 }
-
 
 const saveProfile = async () => {
   if (!user.value) return
@@ -340,3 +332,4 @@ onMounted(() => {
   loadCurrentUser()
 })
 </script>
+

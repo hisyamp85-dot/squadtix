@@ -3,8 +3,10 @@ import { BaseModel, column, beforeSave } from '@ioc:Adonis/Lucid/Orm'
 import Hash from '@ioc:Adonis/Core/Hash'
 
 export default class User extends BaseModel {
+  // opsional (default sudah "users")
   public static table = 'users'
 
+  // 🔑 PK database: id_user → dipakai sebagai user.id di code
   @column({ isPrimary: true, columnName: 'id_user' })
   public id: number
 
@@ -17,14 +19,14 @@ export default class User extends BaseModel {
   @column()
   public email: string
 
-  @column()
+  @column({ serializeAs: null })
   public password: string
 
   @column()
   public role: string
 
   @column()
-  public status?: string
+  public status: string
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime
@@ -32,6 +34,7 @@ export default class User extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public updatedAt: DateTime
 
+  // 🔐 auto hash password
   @beforeSave()
   public static async hashPassword(user: User) {
     if (user.$dirty.password) {

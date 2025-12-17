@@ -2,6 +2,7 @@ import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import CategoryQrcode from 'App/Models/CategoryQrcode'
 import CheckinLog from 'App/Models/CheckinLog'
 import Event from 'App/Models/Event'
+import GroupCategory from 'App/Models/GroupCategory'
 import { DateTime } from 'luxon'
 
 // 🔥 ambil limit entry dari file JSON (tmp) seperti di EventsController
@@ -9,6 +10,9 @@ import EntryAmountStore from 'App/Services/EntryAmountStore'
 
 export default class CheckinsController {
   public async scan({ request, response }: HttpContextContract) {
+    const groupScansId: number | undefined =
+  request.input('groupScansId') || request.input('group_scans_id')
+
     const qrcodeInput: string | undefined = request.input('qrcode')
     const scannedBy: string | undefined =
       request.input('scannedBy') || request.input('scanned_by')
@@ -29,7 +33,14 @@ export default class CheckinsController {
     // const entryAmount: number | null =
     //   typeof entryAmountRaw !== 'undefined' && entryAmountRaw !== null && entryAmountRaw !== ''
     //     ? Number(entryAmountRaw)
-    //     : null
+    //     : 
+    
+    if (!groupScansId) {
+  return response.badRequest({
+    message: 'group_scans_id is required',
+  })
+}
+
 
     if (!qrcodeInput || !qrcodeInput.trim()) {
       return response.badRequest({ message: 'qrcode is required' })
@@ -53,6 +64,22 @@ export default class CheckinsController {
       if (!barcode) {
         return response.notFound({ message: 'Barcode not found' })
       }
+
+      // ==============================
+//  VALIDASI GATE → CATEGORY
+// ==============================
+const allowed = await GroupCategory.query()
+  .where('group_scans_id', groupScansId)
+  .where('event_category_id', barcode.event_category_id)
+  .first()
+
+if (!allowed) {
+  return response.forbidden({
+    message: 'QR ini tidak boleh discan di gate ini',
+    gate: groupScansId,
+    category: barcode.event_category_id,
+  })
+}
 
       // Ambil event utk cek kepemilikan (kalau userIdFilter dikirim)
       const eventQuery = Event.query().where('eventCategoryId', barcode.event_category_id)

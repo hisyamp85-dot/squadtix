@@ -308,20 +308,24 @@ import {
   ChevronDown,
   MoreHorizontal,
 } from 'lucide-vue-next'
-import SidebarWidget from './SidebarWidget.vue'
+import SidebarWidget from '../layout/SidebarWidget.vue'
 import { useSidebar } from '@/composables/useSidebar'
+import type { Component } from 'vue'
 
 const route = useRoute()
 const { isExpanded, isMobileOpen, isHovered, openSubmenu } = useSidebar()
 
 type NormalizedRole = 'admin' | 'user'
 
+type UserRole = 'Admin' | 'User' | 'Scanner' | string
+
+
 interface RawUser {
   id: number | string
   name?: string
   username?: string
   email?: string
-  role?: any
+  role?: UserRole
   status?: string
 }
 
@@ -330,7 +334,7 @@ interface MenuItem {
   path?: string
   pro?: boolean
   new?: boolean
-  icon?: unknown
+  icon?: Component
   subItems?: MenuItem[]
 }
 
@@ -356,7 +360,6 @@ const normalizedRole = computed<NormalizedRole | null>(() => {
 
 const isAdmin = computed(() => normalizedRole.value === 'admin')
 const isUser = computed(() => normalizedRole.value === 'user')
-
 const homePath = computed(() => {
   return '/'
 })
@@ -553,18 +556,19 @@ const endTransition = (el: Element) => {
 </script>
 
 <style scoped>
-@reference "tailwindcss";
+
 
 .menu-item {
   @apply flex items-center gap-3 w-full
     rounded-2xl px-3 py-2.5
     text-[13px] font-medium
     text-slate-600 dark:text-slate-200/80
-    transition-colors transition-transform duration-150
+    transition-all duration-150
     hover:bg-slate-100/80 dark:hover:bg-slate-800/80
     hover:text-slate-900 dark:hover:text-white
     hover:-translate-y-[1px];
 }
+
 
 .menu-item-active {
   @apply bg-indigo-600 text-white shadow-md

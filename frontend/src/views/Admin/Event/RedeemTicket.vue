@@ -158,23 +158,13 @@
                   <div v-if="ticketData" class="mt-4 space-y-2">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div class="mt-4 space-y-1 text-left">
+                        <p><span class="font-semibold">QR Code:</span> {{ ticketData.qrcode || '—' }}</p>
+                        <p><span class="font-semibold">Nama:</span> {{ ticketData.holderName || '—' }}</p>
+                        <p><span class="font-semibold">Other Data:</span> {{ ticketData.otherData || '—' }}</p>
                         <p><span class="font-semibold">Event:</span> {{ ticketData.eventName || '—' }}</p>
                         <p><span class="font-semibold">Category:</span> {{ ticketData.category || '—' }}</p>
-                        <p><span class="font-semibold">Ukuran Baju:</span> {{ ticketData.ukuran_jaket || '—' }}</p>
-                        <p><span class="font-semibold">Instansi:</span> {{ ticketData.instansi || '—' }}</p>
-                        <p><span class="font-semibold">Provinsi:</span> {{ ticketData.provinsi || '—' }}</p>
-                        <p><span class="font-semibold">Kota:</span> {{ ticketData.kota || '—' }}</p>
-                        <p><span class="font-semibold">Jabatan:</span> {{ ticketData.jabatan || '—' }}</p>
-                        <p><span class="font-semibold">No HP:</span> {{ ticketData.no_hp || '—' }}</p>
-                        <p><span class="font-semibold">Email:</span> {{ ticketData.email || '—' }}</p>
-                        <p>
-                          <span class="font-semibold">Status Kehadiran:</span>
-                          {{ ticketData.status_kehadiran || '—' }}
-                        </p>
-                        <p>
-                          <span class="font-semibold">Tanggal Kehadiran:</span>
-                          {{ ticketData.tanggal_kehadiran || '—' }}
-                        </p>
+                  
+                        
                         <p v-if="ticketEntryAmount !== null">
                           <span class="font-semibold">Entry Limit:</span>
                           {{ ticketEntryAmount }}
