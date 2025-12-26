@@ -235,7 +235,7 @@ onMounted(async () => {
   if (!lockedUserId.value) {
     // hanya fetch users kalau dropdown dipakai
     try {
-      const response = await api.get<User[]>('/users')
+      const response = await api.get<User[]>('/admin/users')
       users.value = response.data
     } catch (err) {
       console.error('Failed to fetch users:', err)

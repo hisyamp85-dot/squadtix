@@ -84,7 +84,7 @@ const handleSubmit = async () => {
     return
   }
   try {
-    await api.put(`/events/${props.eventId}/categories/${props.id}`, { categoryName: categoryName.value })
+    await api.put(`/admin/events/categories/${props.id}`, { categoryName: categoryName.value })
     toast.success('Category updated successfully!')
     emit('close')
   } catch (error: unknown) {

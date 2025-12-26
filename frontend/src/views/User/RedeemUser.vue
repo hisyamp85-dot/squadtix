@@ -15,7 +15,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRoute } from "vue-router";
-import UserLayout from "@/components/layout/UserLayout.vue";
+import UserLayout from "@/layouts/UserLayout.vue";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb.vue";
 
 const route = useRoute();

@@ -531,7 +531,7 @@
 </template>
 
 <script setup lang="ts">
-import UserLayout from '@/components/layout/UserLayout.vue'
+import UserLayout from '@/layouts/UserLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import { ref, onMounted, computed, watch, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
@@ -703,7 +703,7 @@ const selectEvent = (event: Event) => {
 const fetchEvents = async () => {
   if (!userId.value) return
   try {
-    const response = await api.get('/events', {
+    const response = await api.get('/user/events', {
       // SESUAIKAN param ini dengan backend kamu (misal `owner_id`, `user_id`, dll)
       params: {
         user_id: userId.value,
@@ -721,13 +721,13 @@ const fetchDashboardData = async () => {
 
   try {
     const [ticketsRes, redeemedRes, categoriesRes, logsRes] = await Promise.all([
-      api.get(`/events/${selectedEventId.value}/total-qrcodes`, {
+      api.get(`/user/events/${selectedEventId.value}/total-qrcodes`, {
         params: { user_id: userId.value },
       }),
-      api.get(`/events/${selectedEventId.value}/total-redeemed`, {
+      api.get(`/user/events/${selectedEventId.value}/total-redeemed`, {
         params: { user_id: userId.value },
       }),
-      api.get(`/events/${selectedEventId.value}/categories`, {
+      api.get(`/user/events/${selectedEventId.value}/categories`, {
         params: { user_id: userId.value },
       }),
       api.get('/checkin/logs', {
@@ -755,7 +755,7 @@ const fetchDashboardData = async () => {
     categoryStats.value = await Promise.all(
       categories.value.map(async (category) => {
         const statsRes = await api.get(
-          `/events/${selectedEventId.value}/categories/${category.id}/stats`,
+          `/user/events/${selectedEventId.value}/categories/${category.id}/stats`,
           {
             params: { user_id: userId.value },
           },

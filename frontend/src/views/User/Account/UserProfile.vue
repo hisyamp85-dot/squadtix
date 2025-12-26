@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout>
+  <UserLayout>
     <PageBreadcrumb :pageTitle="currentPageTitle" :breadcrumbs="breadcrumbs" />
 
     <div
@@ -19,12 +19,12 @@
       <!-- Address (kalau nanti mau disambung ke tabel lain bisa) -->
       <AddressCard />
     </div>
-  </AdminLayout>
+  </UserLayout>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import AdminLayout from '@/components/layout/AdminLayout.vue'
+import UserLayout from '@/layouts/UserLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import ProfileCard from '@/components/profile/ProfileCard.vue'
 import PersonalInfoCard from '@/components/profile/PersonalInfoCard.vue'

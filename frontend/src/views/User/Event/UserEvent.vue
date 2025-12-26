@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout>
+  <UserLayout>
     <PageBreadcrumb :pageTitle="currentPageTitle" :breadcrumbs="breadcrumbs" />
 
     <div
@@ -201,13 +201,13 @@
         />
       </div>
     </div>
-  </AdminLayout>
+  </UserLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import AdminLayout from '@/components/layout/AdminLayout.vue'
+import UserLayout from '@/layouts/UserLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import { EyeIcon, ListIcon, PlusIcon } from '@/icons'
 import AddNewEventModal from '@/views/Admin/Event/AddNewEvent.vue'
@@ -240,6 +240,24 @@ const storedUser = computed<StoredUser | null>(() => {
     return null
   }
 })
+
+const getStoredEventId = (): string | null => {
+  try {
+    const raw = localStorage.getItem('user')
+    const parsed = raw
+      ? (JSON.parse(raw) as { event_id?: string | number; eventId?: string | number })
+      : null
+    const id =
+      parsed?.event_id ??
+      parsed?.eventId ??
+      localStorage.getItem('event_id') ??
+      localStorage.getItem('eventId')
+    if (id === undefined || id === null || id === '') return null
+    return String(id)
+  } catch {
+    return null
+  }
+}
 
 const userId = computed<number | undefined>(() => {
   const id = storedUser.value?.id
@@ -382,13 +400,12 @@ const closeDetailModal = () => {
 
 // Detail event versi user (route UserDetailEvent)
 const viewEventDetail = (event: EventForm) => {
-  if (!event.id_event || !userId.value) return
+  if (!event.id_event) return
 
   router.push({
     name: 'UserDetailEvent',
     params: {
-      id: userId.value,
-      eventId: event.id_event,
+      id: event.id_event,
     },
     state: { event: event as any },
   })
@@ -419,7 +436,7 @@ const handleAddEvent = async (formData: EventForm) => {
       id_user: userId.value, // PASTIKAN event milik user ini
     }
 
-    await api.post('/events', payload)
+    await api.post('/user/events', payload)
     await fetchEvents()
     showAddForm.value = false
     form.value = { name: '', categories: [], status: 'Active' }
@@ -443,7 +460,7 @@ const handleAddEvent = async (formData: EventForm) => {
 const handleSaveEvent = async (eventName: string, status: string) => {
   if (!selectedEvent.value?.id_event) return
   try {
-    await api.put(`/events/${selectedEvent.value.id_event}`, {
+    await api.put(`/user/events/${selectedEvent.value.id_event}`, {
       name: eventName,
       status,
     })
@@ -469,7 +486,7 @@ const handleSaveEvent = async (eventName: string, status: string) => {
 const handleDeleteEvent = async () => {
   if (!selectedEvent.value?.id_event) return
   try {
-    await api.delete(`/events/${selectedEvent.value.id_event}`)
+    await api.delete(`/user/events/${selectedEvent.value.id_event}`)
     await fetchEvents()
     showDetailModal.value = false
     toast.success('Event deleted successfully!')
@@ -491,45 +508,19 @@ const handleDeleteEvent = async () => {
 
 // ======================== FETCH HANYA EVENT USER ========================
 const fetchEvents = async () => {
-  try {
-    if (!userId.value) {
-      router.push('/login')
-      return
-    }
-
-    const response = await api.get('/events')
-    const data = response.data as Array<{
-      event_id: string
-      event_name: string
-      status: string
-      id_user: number | string
-      totalCategories: number
-    }>
-
-    const currentUserIdNum = Number(userId.value)
-
-    const userEvents = data.filter((event) => {
-      const evUser = Number(event.id_user)
-      return !Number.isNaN(evUser) && evUser === currentUserIdNum
-    })
-
-    events.value = userEvents.map((event) => ({
-      id_event: event.event_id,
-      name: event.event_name,
-      categories: new Array(event.totalCategories).fill(''), // untuk .length di tabel
-      status: event.status,
-      id_user: Number(event.id_user),
-    }))
-
-    if (currentPage.value > totalPages.value) {
-      currentPage.value = totalPages.value || 1
-    }
-  } catch (error) {
-    console.error('Failed to fetch events:', error)
-  }
+  // Temporarily disabled: backend endpoint is not available.
+  return
 }
 
 onMounted(() => {
+  const storedEventId = getStoredEventId()
+  if (storedEventId) {
+    router.replace({
+      name: 'UserDetailEvent',
+      params: { id: storedEventId },
+    })
+    return
+  }
   fetchEvents()
 })
 

@@ -347,7 +347,7 @@ const goToPage = (page: number) => {
 const fetchLogs = async () => {
   try {
     isLoading.value = true
-    const response = await api.get('/checkin/logs', {
+    const response = await api.get('/scanner/checkin/logs', {
       params: {
         eventId: selectedEventId.value || undefined,
         eventCategoryId: selectedCategoryId.value || undefined,
@@ -371,7 +371,7 @@ const refreshLogs = () => {
 
 const fetchEvents = async () => {
   try {
-    const response = await api.get('/events')
+    const response = await api.get('/admin/events')
     const data = response.data as Array<{ event_id: string; event_name: string }>
     events.value = data
   } catch (error) {

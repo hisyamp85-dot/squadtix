@@ -228,6 +228,8 @@ const endTransition = (el: Element) => {
 </script>
 
 <style scoped>
+@reference "tailwindcss";
+
 .menu-item {
   @apply flex items-center gap-3 w-full
     rounded-2xl px-3 py-2.5

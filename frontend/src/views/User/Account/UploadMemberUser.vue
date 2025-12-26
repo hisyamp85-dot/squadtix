@@ -206,7 +206,7 @@ import DetailUserMember from './DetailUserMember.vue'
 import UploadMemberData from './UploadMemberData.vue'
 import ConfirmModal from '@/components/ui/ConfirmModal.vue'
 import { toast } from 'vue3-toastify'
-import UserLayout from '@/components/layout/UserLayout.vue'
+import UserLayout from '@/layouts/UserLayout.vue'
 
 interface MemberUser {
   id: number
@@ -528,4 +528,3 @@ async function fetchUsers() {
 
 
 </script>
-

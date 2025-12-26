@@ -24,6 +24,7 @@ export default class EventsController {
       id: barcode.id,
       qrcode: barcode.qrcode,
       name: barcode.name,
+      id_transaction: barcode.id_transaction ?? null,
       other_data: barcode.other_data,
       status: status || 'Pending',
       redeemed_at: redeemedAt?.toISO() || null,
@@ -249,6 +250,31 @@ export default class EventsController {
 
     response.header('Cache-Control', 'no-cache')
     return response.ok({ categories: categoryList })
+  }
+
+
+  public async setEntryAmount({ params, request, response }: HttpContextContract) {
+    const { eventId, eventCategoryId } = params
+
+    const raw = request.input('entry_amount')
+    const parsed = Number(raw)
+
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      return response.badRequest({
+        message: 'entry_amount must be a non-negative number',
+      })
+    }
+
+    const amount = Math.floor(parsed)
+
+    await EntryAmountStore.setEntryAmount(String(eventId), String(eventCategoryId), amount)
+
+    return response.ok({
+      message: 'Entry amount updated',
+      event_id: String(eventId),
+      event_category_id: String(eventCategoryId),
+      entry_amount: amount,
+    })
   }
 
   public async categories(ctx: HttpContextContract) {
@@ -492,15 +518,16 @@ export default class EventsController {
     const { eventId, eventCategoryId } = params
 
     try {
-      const qrcodes = await CategoryQrcode.query()
-        .where('event_id', eventId)
-        .where('event_category_id', eventCategoryId)
-        .select(
-          'id',
-          'qrcode',
-          'name',
-          'other_data'
-        )
+    const qrcodes = await CategoryQrcode.query()
+      .where('event_id', eventId)
+      .where('event_category_id', eventCategoryId)
+      .select(
+        'id',
+        'qrcode',
+        'id_transaction',
+        'name',
+        'other_data'
+      )
 
       const qrcodeIds = qrcodes.map((qr) => qr.id)
       const redeemedLogs = await CheckinLog.query()
@@ -515,14 +542,15 @@ export default class EventsController {
         redeemedAtMap.set(log.categoryQrcodeId, log.scannedAt)
       })
 
-      const qrcodeList = qrcodes.map((qr) => ({
-        id: qr.id,
-        qrcode: qr.qrcode,
-        name: qr.name,
-        other_data: qr.other_data,
-        status: statusMap.get(qr.id) || 'Pending',
-        redeemed_at: redeemedAtMap.get(qr.id)?.toISO() || null,
-      }))
+    const qrcodeList = qrcodes.map((qr) => ({
+      id: qr.id,
+      qrcode: qr.qrcode,
+      id_transaction: qr.id_transaction ?? null,
+      name: qr.name,
+      other_data: qr.other_data,
+      status: statusMap.get(qr.id) || 'Pending',
+      redeemed_at: redeemedAtMap.get(qr.id)?.toISO() || null,
+    }))
 
       return response.ok(qrcodeList)
     } catch (error: any) {
@@ -627,6 +655,7 @@ export default class EventsController {
           event_id: eventId,
           event_category_id: eventCategoryId,
           name: row.name,
+          id_transaction: row.id_transaction || null,
           other_data: row.other_data || null,
         }
       })
@@ -750,10 +779,12 @@ export default class EventsController {
     const {
       qrcode,
       name,
+      id_transaction,
       other_data,
     } = request.only([
       'qrcode',
       'name',
+      'id_transaction',
       'other_data',
     ])
 
@@ -778,14 +809,15 @@ export default class EventsController {
         return response.badRequest({ error: `qrcode '${qrcode}' already exists` })
       }
 
-      const categoryQrcode = new CategoryQrcode()
-      categoryQrcode.table_events_id = tableEventsId
-      categoryQrcode.qrcode = qrcode
-      categoryQrcode.event_id = eventId
-      categoryQrcode.event_category_id = eventCategoryId
-      categoryQrcode.name = name
-      categoryQrcode.other_data = other_data || null
-      await categoryQrcode.save()
+    const categoryQrcode = new CategoryQrcode()
+    categoryQrcode.table_events_id = tableEventsId
+    categoryQrcode.qrcode = qrcode
+    categoryQrcode.event_id = eventId
+    categoryQrcode.event_category_id = eventCategoryId
+    categoryQrcode.name = name
+    categoryQrcode.id_transaction = id_transaction || null
+    categoryQrcode.other_data = other_data || null
+    await categoryQrcode.save()
 
       return response.created({ message: 'Barcode added successfully' })
     } catch (error: any) {
@@ -836,7 +868,14 @@ export default class EventsController {
 
       let barcodes: CategoryQrcode[] = []
 
-      barcodes = [barcode]
+      const transactionId = barcode.id_transaction?.trim()
+      if (transactionId) {
+        barcodes = await CategoryQrcode.query()
+          .where('event_id', eventId)
+          .where('id_transaction', transactionId)
+      } else {
+        barcodes = [barcode]
+      }
 
       const barcodeIds = barcodes.map((b) => b.id)
       const redeemedLogs = await CheckinLog.query()
@@ -1026,5 +1065,227 @@ public async myEvents({ auth, response }: HttpContextContract) {
     }))
   )
 }
+
+  // ========================================================================
+  //  USER WRITE HELPERS
+  // ========================================================================
+  private async ensureUserOwnsEvent(
+    { auth, response }: HttpContextContract,
+    eventId: string
+  ): Promise<boolean> {
+    const user = auth.user
+    if (!user) {
+      response.unauthorized({ message: 'Unauthorized' })
+      return false
+    }
+
+    const owned = await Event.query()
+      .where('eventId', eventId)
+      .where('id_user', user.id)
+      .first()
+
+    if (!owned) {
+      response.forbidden({ message: 'Forbidden' })
+      return false
+    }
+
+    return true
+  }
+
+  private async ensureUserOwnsCategory(
+    { auth, response }: HttpContextContract,
+    eventCategoryId: string
+  ): Promise<boolean> {
+    const user = auth.user
+    if (!user) {
+      response.unauthorized({ message: 'Unauthorized' })
+      return false
+    }
+
+    const owned = await Event.query()
+      .where('eventCategoryId', eventCategoryId)
+      .where('id_user', user.id)
+      .first()
+
+    if (!owned) {
+      response.forbidden({ message: 'Forbidden' })
+      return false
+    }
+
+    return true
+  }
+
+  // ========================================================================
+  //  USER WRITE ROUTES
+  // ========================================================================
+  public async userShow(ctx: HttpContextContract) {
+    const { eventId } = ctx.params
+    if (!(await this.ensureUserOwnsEvent(ctx, String(eventId)))) return
+    return this.show(ctx)
+  }
+
+  public async userIndex(ctx: HttpContextContract) {
+    const user = ctx.auth.user
+    if (!user) {
+      ctx.response.unauthorized({ message: 'Unauthorized' })
+      return
+    }
+    ctx.request.updateBody({ id_user: user.id })
+    return this.index(ctx)
+  }
+
+  public async userStore(ctx: HttpContextContract) {
+    const user = ctx.auth.user
+    if (!user) {
+      ctx.response.unauthorized({ message: 'Unauthorized' })
+      return
+    }
+    ctx.request.updateBody({ id_user: user.id })
+    return this.store(ctx)
+  }
+
+  public async userUpdateEvent(ctx: HttpContextContract) {
+    const { eventId } = ctx.params
+    if (!(await this.ensureUserOwnsEvent(ctx, String(eventId)))) return
+    return this.update(ctx)
+  }
+
+  public async userDeleteEvent(ctx: HttpContextContract) {
+    const { eventId } = ctx.params
+    if (!(await this.ensureUserOwnsEvent(ctx, String(eventId)))) return
+    return this.deleteEvent(ctx)
+  }
+
+  public async userGetCategories(ctx: HttpContextContract) {
+    const { eventId } = ctx.params
+    if (!(await this.ensureUserOwnsEvent(ctx, String(eventId)))) return
+    return this.getCategories(ctx)
+  }
+
+  public async userSetEntryAmount(ctx: HttpContextContract) {
+    const { eventId } = ctx.params
+    if (!(await this.ensureUserOwnsEvent(ctx, String(eventId)))) return
+    return this.setEntryAmount(ctx)
+  }
+
+  public async userAddCategories(ctx: HttpContextContract) {
+    const { eventId } = ctx.params
+    if (!(await this.ensureUserOwnsEvent(ctx, String(eventId)))) return
+    return this.addCategories(ctx)
+  }
+
+  public async userUpdateCategory(ctx: HttpContextContract) {
+    const { eventId } = ctx.params
+    if (!(await this.ensureUserOwnsEvent(ctx, String(eventId)))) return
+    return this.updateCategory(ctx)
+  }
+
+  public async userDeleteCategory(ctx: HttpContextContract) {
+    const { eventId } = ctx.params
+    if (!(await this.ensureUserOwnsEvent(ctx, String(eventId)))) return
+    return this.deleteCategory(ctx)
+  }
+
+  public async userGetGroupScans(ctx: HttpContextContract) {
+    const { eventId } = ctx.params
+    if (!(await this.ensureUserOwnsEvent(ctx, String(eventId)))) return
+    return this.getGroupScans(ctx)
+  }
+
+  public async userGetGroupCategories(ctx: HttpContextContract) {
+    const { eventId } = ctx.params
+    if (!(await this.ensureUserOwnsEvent(ctx, String(eventId)))) return
+    return this.getGroupCategories(ctx)
+  }
+
+  public async userAddGroupScans(ctx: HttpContextContract) {
+    const { eventId } = ctx.params
+    if (!(await this.ensureUserOwnsEvent(ctx, String(eventId)))) return
+    return this.addGroupScans(ctx)
+  }
+
+  public async userUpdateGroupScan(ctx: HttpContextContract) {
+    const { eventId } = ctx.params
+    if (!(await this.ensureUserOwnsEvent(ctx, String(eventId)))) return
+    return this.updateGroupScan(ctx)
+  }
+
+  public async userDeleteGroupScan(ctx: HttpContextContract) {
+    const { eventId } = ctx.params
+    if (!(await this.ensureUserOwnsEvent(ctx, String(eventId)))) return
+    return this.deleteGroupScan(ctx)
+  }
+
+  public async userAddGroupCategory(ctx: HttpContextContract) {
+    const { eventId } = ctx.params
+    if (!(await this.ensureUserOwnsEvent(ctx, String(eventId)))) return
+    return this.addGroupCategory(ctx)
+  }
+
+  public async userDeleteGroupCategory(ctx: HttpContextContract) {
+    const { eventId } = ctx.params
+    if (!(await this.ensureUserOwnsEvent(ctx, String(eventId)))) return
+    return this.deleteGroupCategory(ctx)
+  }
+
+  public async userUploadCategoryQrcodes(ctx: HttpContextContract) {
+    const { eventId } = ctx.params
+    if (!(await this.ensureUserOwnsEvent(ctx, String(eventId)))) return
+    return this.uploadCategoryQrcodes(ctx)
+  }
+
+  public async userAddCategoryQrcode(ctx: HttpContextContract) {
+    const { eventId } = ctx.params
+    if (!(await this.ensureUserOwnsEvent(ctx, String(eventId)))) return
+    return this.addCategoryQrcode(ctx)
+  }
+
+  public async userDeleteCategoryQrcodes(ctx: HttpContextContract) {
+    const { eventId } = ctx.params
+    if (!(await this.ensureUserOwnsEvent(ctx, String(eventId)))) return
+    return this.deleteCategoryQrcodes(ctx)
+  }
+
+  public async userCheckGroupCategoriesForCategory(ctx: HttpContextContract) {
+    const { eventCategoryId } = ctx.params
+    if (!(await this.ensureUserOwnsCategory(ctx, String(eventCategoryId)))) return
+    return this.checkGroupCategoriesForCategory(ctx)
+  }
+
+  public async userGetTotalQrcodes(ctx: HttpContextContract) {
+    const { eventId } = ctx.params
+    if (!(await this.ensureUserOwnsEvent(ctx, String(eventId)))) return
+    return this.getTotalQrcodes(ctx)
+  }
+
+  public async userGetTotalRedeemed(ctx: HttpContextContract) {
+    const { eventId } = ctx.params
+    if (!(await this.ensureUserOwnsEvent(ctx, String(eventId)))) return
+    return this.getTotalRedeemed(ctx)
+  }
+
+  public async userGetCategoryStats(ctx: HttpContextContract) {
+    const { eventId } = ctx.params
+    if (!(await this.ensureUserOwnsEvent(ctx, String(eventId)))) return
+    return this.getCategoryStats(ctx)
+  }
+
+  public async userGetCategoryQrcodes(ctx: HttpContextContract) {
+    const { eventId } = ctx.params
+    if (!(await this.ensureUserOwnsEvent(ctx, String(eventId)))) return
+    return this.getCategoryQrcodes(ctx)
+  }
+
+  public async userValidateCategoryQrcode(ctx: HttpContextContract) {
+    const { eventId } = ctx.params
+    if (!(await this.ensureUserOwnsEvent(ctx, String(eventId)))) return
+    return this.validateCategoryQrcode(ctx)
+  }
+
+  public async userRedeemCategoryQrcode(ctx: HttpContextContract) {
+    const { eventId } = ctx.params
+    if (!(await this.ensureUserOwnsEvent(ctx, String(eventId)))) return
+    return this.redeemCategoryQrcode(ctx)
+  }
 
 }

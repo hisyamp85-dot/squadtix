@@ -277,12 +277,12 @@
           <ul class="mt-2 space-y-1 ml-9">
             <li>
               <router-link
-                to="/user"
+                to="/admin/user"
                 :class="[
                   'menu-dropdown-item',
                   {
-                    'menu-dropdown-item-active': isActive('/user'),
-                    'menu-dropdown-item-inactive': !isActive('/user'),
+                    'menu-dropdown-item-active': isActive('/admin/user'),
+                    'menu-dropdown-item-inactive': !isActive('/admin/user'),
                   },
                 ]"
               >
@@ -379,7 +379,7 @@ const adminMenuGroups: { title: string; items: MenuItem[] }[] = [
       {
         name: 'Events',
         icon: CalendarDays,
-        subItems: [{ name: 'All Events', path: '/event', pro: false }],
+        subItems: [{ name: 'All Events', path: '/admin/event', pro: false }],
       },
     ],
   },

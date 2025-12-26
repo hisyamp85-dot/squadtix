@@ -1,10 +1,10 @@
 <template>
-  <AdminLayout>
+  <component :is="layoutComponent">
     <PageBreadcrumb
       :pageTitle="currentPageTitle"
       :breadcrumbs="[
         { text: 'Home', to: '/' },
-        { text: 'Event', to: '/event' },
+        { text: 'Event', to: eventListPath },
         { text: 'Event Detail', active: true }
       ]"
     />
@@ -14,7 +14,11 @@
     >
       <div class="mb-5 lg:mb-7">
         <div class="flex items-center gap-4 mb-3">
-          <button @click="goBack" class="px-4 py-2 flex items-center gap-2">
+          <button
+            v-if="currentRole !== 'user'"
+            @click="goBack"
+            class="px-4 py-2 flex items-center gap-2"
+          >
             <BackArrowIcon class="dark:text-white" />
           </button>
           <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">
@@ -61,6 +65,7 @@
             </Button>
 
             <Button
+              v-if="currentRole !== 'user'"
               class="btn btn-primary"
               size="sm"
               variant="primary"
@@ -284,7 +289,7 @@
         </div>
       </div>
     </div>
-  </AdminLayout>
+  </component>
 </template>
 
 <script setup lang="ts">
@@ -292,6 +297,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter, type HistoryState } from 'vue-router'
 import { useSidebar } from '@/composables/useSidebar'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import UserLayout from '@/layouts/UserLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import { PlusIcon, UploadIcon, SettingsIcon, ChevronDownIcon } from '@/icons'
 import Button from '@/components/ui/Button.vue'
@@ -324,6 +330,22 @@ const totalQrcodeCount = ref(0)
 const route = useRoute()
 const router = useRouter()
 const { isExpanded, isHovered } = useSidebar()
+const eventId = computed(
+  () => (route.params.id as string | undefined) || (route.params.eventId as string | undefined)
+)
+const normalizeRole = (raw: unknown): string | null => {
+  if (raw == null) return null
+  const r = String(raw).toLowerCase().trim()
+  if (['admin', 'administrator', 'superadmin'].includes(r)) return 'admin'
+  return r
+}
+const currentRole = computed(() => normalizeRole(route.meta.role) || 'admin')
+const isUserRoute = computed(() => route.path.startsWith('/user/'))
+const layoutComponent = computed(() => (isUserRoute.value ? UserLayout : AdminLayout))
+const eventListPath = computed(() => (isUserRoute.value ? '/event' : '/admin/event'))
+const eventsApiBase = computed(() => (isUserRoute.value ? '/user/events' : '/admin/events'))
+const groupScansBase = computed(() => (isUserRoute.value ? '/user/events' : '/scanner/events'))
+const isUser = computed(() => isUserRoute.value)
 const currentPageTitle = ref('Event Detail')
 const event = ref<EventForm | null>(null)
 const categoryObjects = ref<Category[]>([])
@@ -356,7 +378,7 @@ const onEntryAmountInput = async (category: Category) => {
 
   try {
     await api.put(
-      `/events/${eventId}/categories/${category.id}/entry-amount`,
+      `${eventsApiBase.value}/${eventId}/categories/${category.id}/entry-amount`,
       { entry_amount: amount }
     )
     // optional: kasih notifikasi kalau mau
@@ -430,7 +452,7 @@ const goToPage = (page: number) => {
 const fetchCategories = async () => {
   if (!event.value) return
   try {
-    const response = await api.get(`/events/${route.params.id}/categories?t=${Date.now()}`, {
+    const response = await api.get(`${eventsApiBase.value}/${eventId.value}/categories?t=${Date.now()}`, {
       headers: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' }
     })
     console.log('fetchCategories called', response.data)
@@ -468,7 +490,7 @@ const handleAddCategory = async (eventData: EventForm) => {
       status: eventData.status || 'Active'
     }
 
-    await api.post(`/events/${event.value.id_event}/categories`, payload)
+    await api.post(`${eventsApiBase.value}/${event.value.id_event}/categories`, payload)
     await fetchCategories()
     showAddForm.value = false
     form.value = { categories: [], status: 'Active' }
@@ -496,12 +518,12 @@ const uploadBarcode = async (category: string) => {
   const categoryId = categoryObj ? categoryObj.id : ''
 
   try {
-    const groupScansResponse = await api.get(`/events/${route.params.id}/group-scans`)
+    const groupScansResponse = await api.get(`${groupScansBase.value}/${eventId.value}/group-scans`)
     const groupScansData = Array.isArray(groupScansResponse.data) ? groupScansResponse.data : []
     const hasGroupScans = groupScansData.length > 0
 
     const groupCategoriesResponse = await api.get(
-      `/events/categories/${categoryId}/group-categories-count`
+      `${eventsApiBase.value}/categories/${categoryId}/group-categories-count`
     )
     const groupCategoriesData = groupCategoriesResponse.data as { count: number }
     const hasGroupCategories = groupCategoriesData.count > 0
@@ -511,10 +533,17 @@ const uploadBarcode = async (category: string) => {
       return
     }
 
-    router.push({
-      path: '/event/upload-barcode',
-      query: { eventId: route.params.id, event_category_id: categoryId }
-    })
+    if (isUser.value) {
+      router.push({
+        name: 'UserUploadBarcode',
+        query: { eventId: eventId.value, event_category_id: categoryId },
+      })
+    } else {
+      router.push({
+        name: 'AdminUploadBarcode',
+        query: { eventId: eventId.value, event_category_id: categoryId },
+      })
+    }
   } catch (error) {
     console.error('Error checking prerequisites:', error)
     toast.error('Failed to check prerequisites for uploading barcodes.')
@@ -532,33 +561,12 @@ const editCategory = (category: string) => {
 
 const handleEditCategory = async (newCategoryName: string) => {
   if (!event.value) return
-  try {
-    const categoryObj = categoryObjects.value.find(c => c.name === selectedCategory.value)
-    if (!categoryObj) return
+  const categoryObj = categoryObjects.value.find(c => c.name === selectedCategory.value)
+  if (!categoryObj) return
 
-    await api.put(
-      `/events/${event.value.id_event}/categories/${categoryObj.id}`,
-      { categoryName: newCategoryName }
-    )
-
-    await fetchCategories()
-    showEditForm.value = false
-    selectedCategory.value = ''
-    toast.success('Category updated successfully!')
-  } catch (error: unknown) {
-    if (isAxiosError(error)) {
-      console.error('Failed to update category:', error.response?.data || error.message)
-      const data = error.response?.data
-      const errorMsg =
-        typeof data === 'object' && data !== null && 'error' in data
-          ? String((data as { error: unknown }).error)
-          : error.message
-      toast.error('Failed to update category: ' + errorMsg)
-    } else {
-      console.error('Unexpected error:', error)
-      toast.error('Unexpected error')
-    }
-  }
+  await fetchCategories()
+  showEditForm.value = false
+  selectedCategory.value = ''
 }
 
 const deleteCategory = (category: string) => {
@@ -568,7 +576,7 @@ const deleteCategory = (category: string) => {
       const categoryObj = categoryObjects.value.find(c => c.name === category)
       if (!categoryObj) return
 
-      await api.delete(`/events/${event.value?.id_event}/categories/${categoryObj.id}`)
+      await api.delete(`${eventsApiBase.value}/${event.value?.id_event}/categories/${categoryObj.id}`)
       await fetchCategories()
       toast.success('Category deleted successfully!')
     } catch (error: unknown) {
@@ -603,7 +611,7 @@ const confirmAction = async () => {
 }
 
 onMounted(async () => {
-  if (route.params.id) {
+  if (eventId.value) {
     const eventData = history.state?.event as EventForm
     if (eventData) {
       event.value = { ...eventData, categories: [] }
@@ -612,7 +620,7 @@ onMounted(async () => {
       await fetchTotalQrcodes()
     } else {
       try {
-        const response = await api.get(`/events/${route.params.id}`)
+        const response = await api.get(`${eventsApiBase.value}/${eventId.value}`)
         const eventData = response.data as EventForm
         event.value = { ...eventData, categories: [] }
         await fetchCategories()
@@ -626,28 +634,48 @@ onMounted(async () => {
 
 // navigation helpers
 const goBack = () => {
-  router.push('/event')
+  router.push(eventListPath.value)
 }
 
 const goToRedeem = () => {
-  router.push({ path: '/event/redeem', query: { eventId: route.params.id } })
+  if (isUser.value) {
+    router.push({ name: 'UserRedeemTicket', query: { eventId: eventId.value } })
+  } else {
+    router.push({ name: 'AdminRedeemTicket', query: { eventId: eventId.value } })
+  }
 }
 
 const goToGroupEvent = () => {
-  router.push({ path: '/event/group-event', query: { eventId: route.params.id } })
+  if (isUser.value) {
+    router.push({ name: 'UserGroupEvent', query: { eventId: eventId.value } })
+  } else {
+    router.push({ name: 'AdminGroupEvent', query: { eventId: eventId.value } })
+  }
 }
 
 const goToCategoryGroupEvent = () => {
-  router.push({
-    path: '/event/add-category-group-event',
-    query: { eventId: route.params.id }
-  })
+  if (isUser.value) {
+    router.push({
+      name: 'UserAddCategoryGroupEvent',
+      query: { eventId: eventId.value },
+    })
+  } else {
+    router.push({
+      name: 'AdminAddCategoryGroupEvent',
+      query: { eventId: eventId.value },
+    })
+  }
+}
+
+const getEventId = (): string | undefined => {
+  return eventId.value || event.value?.id_event
 }
 
 const fetchTotalQrcodes = async () => {
-  if (!event.value) return
+  const eventId = getEventId()
+  if (!eventId) return
   try {
-    const response = await api.get(`/events/${route.params.id}/total-qrcodes`)
+    const response = await api.get(`${eventsApiBase.value}/${eventId}/total-qrcodes`)
     totalQrcodeCount.value = (response.data as { totalQrcodes: number }).totalQrcodes
   } catch (error) {
     console.error('Failed to fetch total QR codes:', error)

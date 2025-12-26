@@ -20,8 +20,8 @@
         !isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start',
       ]"
     >
-      <!-- untuk user: balik ke /:id (dashboard user) -->
-      <router-link :to="`/${userId}`">
+      <!-- untuk user: balik ke dashboard -->
+      <router-link to="/">
         <img
           v-if="isExpanded || isHovered || isMobileOpen"
           class="dark:hidden"
@@ -162,7 +162,26 @@
                   >
                     <ul class="mt-2 space-y-1 ml-9">
                       <li v-for="subItem in item.subItems" :key="subItem.name">
+                        <button
+                          v-if="subItem.onClick"
+                          type="button"
+                          @click="subItem.onClick"
+                          :class="[
+                            'menu-dropdown-item w-full text-left',
+                            {
+                              'menu-dropdown-item-active': isActive(
+                                subItem.path
+                              ),
+                              'menu-dropdown-item-inactive': !isActive(
+                                subItem.path
+                              ),
+                            },
+                          ]"
+                        >
+                          {{ subItem.name }}
+                        </button>
                         <router-link
+                          v-else
                           :to="subItem.path ?? ''"
                           :class="[
                             'menu-dropdown-item',
@@ -229,12 +248,14 @@
 </template>
 
 <script setup lang="ts">
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
+import { computed } from "vue";
+import api from "@/lib/axios";
 import {
-  GridIcon,
-  UserCircleIcon,
   ChevronDownIcon,
   HorizontalDots,
+  LayoutDashboardIcon,
+  CalenderIcon,
   ListIcon,
 } from "../../icons";
 import SidebarWidget from "../layout/SidebarWidget.vue";
@@ -243,62 +264,125 @@ import { useSidebar } from "@/composables/useSidebar";
 const route = useRoute();
 const { isExpanded, isMobileOpen, isHovered, openSubmenu } = useSidebar();
 
-// ambil :id dari URL sebagai base path user
-const userId = route.params.id as string;
-
 interface MenuItem {
   name: string;
   path?: string;
+  onClick?: () => void;
   pro?: boolean;
   new?: boolean;
   icon?: unknown;
   subItems?: MenuItem[];
 }
 
-const menuGroups: { title: string; items: MenuItem[] }[] = [
+const router = useRouter();
+
+const getStoredEventId = (): string | null => {
+  try {
+    const raw = localStorage.getItem("user");
+    const parsed = raw
+      ? (JSON.parse(raw) as { event_id?: string | number; eventId?: string | number })
+      : null;
+    const id =
+      parsed?.event_id ??
+      parsed?.eventId ??
+      localStorage.getItem("event_id") ??
+      localStorage.getItem("eventId");
+    if (id === undefined || id === null || id === "") return null;
+    return String(id);
+  } catch {
+    return null;
+  }
+};
+
+const goToUserEventDetail = async () => {
+  const stored = getStoredEventId();
+  if (stored) {
+    router.push(`/user/event/detail/${stored}`);
+    return;
+  }
+
+  try {
+    const response = await api.get("/user/my-events");
+    const events = response.data as Array<{ event_id?: string | number }>;
+    const firstId = events?.[0]?.event_id;
+    if (firstId !== undefined && firstId !== null && String(firstId).trim() !== "") {
+      router.push(`/user/event/detail/${firstId}`);
+      return;
+    }
+  } catch (error) {
+    console.error("Failed to fetch user events:", error);
+  }
+
+  router.push("/event");
+};
+
+const goToUserRedeem = async () => {
+  const stored = getStoredEventId();
+  if (stored) {
+    router.push({ path: "/user/event/redeem", query: { eventId: stored } });
+    return;
+  }
+
+  try {
+    const response = await api.get("/user/my-events");
+    const events = response.data as Array<{ event_id?: string | number }>;
+    const firstId = events?.[0]?.event_id;
+    if (firstId !== undefined && firstId !== null && String(firstId).trim() !== "") {
+      router.push({ path: "/user/event/redeem", query: { eventId: firstId } });
+      return;
+    }
+  } catch (error) {
+    console.error("Failed to fetch user events:", error);
+  }
+
+  router.push("/event");
+};
+
+const menuGroups = computed<{ title: string; items: MenuItem[] }[]>(() => [
   {
     title: "Main",
     items: [
       {
-        icon: GridIcon,
+        icon: LayoutDashboardIcon,
         name: "Dashboard",
-        path: `/${userId}`,
+        path: "/",
         pro: false,
       },
     ],
   },
   {
-    title: "Account",
+    title: "Event Management",
     items: [
       {
-        icon: UserCircleIcon,
-        name: "Account",
+        name: "Events",
+        icon: CalenderIcon,
         subItems: [
-          { name: "Profile", path: `/${userId}/profile`, pro: false },
-          { name: "User", path: `/${userId}/account/user`, pro: false },
-          {
-            name: "Group User",
-            path: `/${userId}/account/group-user`,
-            pro: false,
-          },
+          { name: "All Category", onClick: goToUserEventDetail, pro: false },
+          
         ],
       },
     ],
   },
   {
-    title: "Redeem",
+    title: "Gate & Attendance",
     items: [
       {
-        name: "Redeem",
+        name: "Scan & Gate",
         icon: ListIcon,
         subItems: [
-          { name: "Tickets", path: `/${userId}/redeem/tickets`, pro: false },
-          { name: "Rewards", path: `/${userId}/redeem/rewards`, pro: false },
+          {
+            name: "Redeem",
+            path: "/user/event/redeem",
+            onClick: goToUserRedeem,
+            pro: false,
+          },
+          { name: "Check-in", path: "/checkin", pro: false },
+          { name: "Check-out", path: "/checkout", pro: false },
         ],
       },
     ],
   },
-];
+]);
 
 const isActive = (path?: string) => path !== undefined && route.path === path;
 
@@ -309,7 +393,7 @@ const toggleSubmenu = (groupIndex: number, itemIndex: number) => {
 
 const isSubmenuOpen = (groupIndex: number, itemIndex: number) => {
   const key = `${groupIndex}-${itemIndex}`;
-  const item = menuGroups[groupIndex].items[itemIndex];
+  const item = menuGroups.value[groupIndex].items[itemIndex];
 
   const hasActiveSubItem = item.subItems?.some((subItem) =>
     isActive(subItem.path)

@@ -112,6 +112,9 @@ const rowCount = ref(0)
 
 const route = useRoute()
 const eventId = computed(() => route.query.eventId as string || '1')
+const eventsApiBase = computed(() =>
+  route.path.startsWith('/user/') ? '/user/events' : '/admin/events'
+)
 
 watch(() => props.show, (newShow) => {
   if (newShow) {
@@ -177,7 +180,7 @@ function triggerFileInput() {
 }
 
 function downloadTemplate() {
-  const csvContent = `qrcode,name,other_data\nABC123,test1,Reguler\nDEF456,test2,VIP\n`
+  const csvContent = `id_transaction,qrcode,name,other_data\nTRX001,ABC123,test1,Reguler\nTRX002,DEF456,test2,VIP\n`
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
   const link = document.createElement('a')
   const url = URL.createObjectURL(blob)
@@ -199,11 +202,15 @@ async function handleSubmit() {
     const formData = new FormData()
     formData.append('file', selectedFile.value)
 
-    const response = await api.post(`/events/${eventId.value}/categories/${route.query.event_category_id}/qrcodes/upload`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
+    const response = await api.post(
+      `${eventsApiBase.value}/${eventId.value}/categories/${route.query.event_category_id}/qrcodes/upload`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       }
-    })
+    )
 
     toast.success((response.data as { message: string }).message)
     emit('submit')

@@ -14,32 +14,39 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
+  },
+  build: {
+    chunkSizeWarningLimit: 1500,
   },
   server: {
     host: '0.0.0.0',
     proxy: {
+      '/api': {
+        target: 'http://localhost:3333',
+        changeOrigin: true,
+      },
       '/users': {
         target: 'http://localhost:3333',
         changeOrigin: true
       },
       '/events': {
-      target: 'http://localhost:3333',
-      changeOrigin: true,
+        target: 'http://localhost:3333',
+        changeOrigin: true,
+      },
+      '/member-users': {
+        target: 'http://localhost:3333',
+        changeOrigin: true,
+      },
+      '/checkin': {
+        target: 'http://localhost:3333',
+        changeOrigin: true,
+      },
+      '/ping': {
+        target: 'http://localhost:3333',
+        changeOrigin: true,
+      },
     },
-    '/member-users': {
-      target: 'http://localhost:3333',
-      changeOrigin: true,
-    },
-    '/checkin': {
-      target: 'http://localhost:3333',
-      changeOrigin: true,
-    },
-    '/ping': {
-      target: 'http://localhost:3333',
-      changeOrigin: true,
-    },
-    }
-  }
+  },
 })

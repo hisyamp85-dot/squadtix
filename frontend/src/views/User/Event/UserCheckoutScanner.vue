@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout>
+  <UserLayout>
     <PageBreadcrumb :pageTitle="'Barcode Check-out'" :breadcrumbs="breadcrumbs" />
     <div
       class="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12"
@@ -277,14 +277,14 @@
         </div>
       </div>
     </div>
-  </AdminLayout>
+  </UserLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library'
-import AdminLayout from '@/components/layout/AdminLayout.vue'
+import UserLayout from '@/layouts/UserLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import BackArrowIcon from '@/icons/BackArrowIcon.vue'
 import Button from '@/components/ui/Button.vue'
@@ -550,7 +550,7 @@ const fetchEvents = async () => {
       return
     }
 
-    const response = await api.get('/events')
+    const response = await api.get('/user/events')
     const data = response.data as Array<{
       event_id: string
       event_name: string
@@ -576,7 +576,7 @@ const fetchCategories = async (eventId: string) => {
       categories.value = []
       return
     }
-    const response = await api.get(`/events/${eventId}/categories`)
+    const response = await api.get(`/user/events/${eventId}/categories`)
     const data = response.data as { categories: Array<{ name: string; id: string }> }
     categories.value = data.categories
   } catch (error) {

@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout>
+  <UserLayout>
     <PageBreadcrumb :pageTitle="'Check-in Logs'" :breadcrumbs="breadcrumbs" />
     <div
       class="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-7
@@ -231,13 +231,13 @@
         </div>
       </div>
     </div>
-  </AdminLayout>
+  </UserLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import AdminLayout from '@/components/layout/AdminLayout.vue'
+import UserLayout from '@/layouts/UserLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import BackArrowIcon from '@/icons/BackArrowIcon.vue'
 import Button from '@/components/ui/Button.vue'
@@ -371,7 +371,7 @@ const refreshLogs = () => {
 
 const fetchEvents = async () => {
   try {
-    const response = await api.get('/events')
+    const response = await api.get('/user/events')
     const data = response.data as Array<{ event_id: string; event_name: string }>
     events.value = data
   } catch (error) {
@@ -386,7 +386,7 @@ const fetchCategories = async (eventId: string) => {
       categories.value = []
       return
     }
-    const response = await api.get(`/events/${eventId}/categories`)
+    const response = await api.get(`/user/events/${eventId}/categories`)
     const data = response.data as {
       categories: Array<{ name: string; id: string }>
     }

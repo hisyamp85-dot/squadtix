@@ -2,8 +2,8 @@
   <AdminLayout>
     <PageBreadcrumb :pageTitle="'Group Event'" :breadcrumbs="[
       { text: 'Home', to: '/' },
-      { text: 'Event', to: '/event' },
-      { text: 'Event Detail', to: `/event/detail/${route.query.eventId || '1'}` },
+      { text: 'Event', to: '/admin/event' },
+      { text: 'Event Detail', to: `/admin/event/detail/${route.query.eventId || '1'}` },
       { text: 'Group Event', active: true }
     ]" />
 
@@ -165,7 +165,7 @@ const route = useRoute()
 const goBack = () => {
   const eventId = route.query.eventId as string
   if (eventId) {
-    router.push({ name: 'DetailEvent', params: { id: eventId } })
+    router.push({ name: 'AdminEventDetail', params: { id: eventId } })
   } else {
     router.push({ name: 'AdminEvent' })
   }
@@ -202,7 +202,7 @@ const confirmAction = async () => {
         toast.error('Event ID not found')
         return
       }
-      await axios.delete(`/events/${eventId}/group-scans/${groupToDelete.value.id}`)
+      await axios.delete(`/admin/events/${eventId}/group-scans/${groupToDelete.value.id}`)
       toast.success('Group deleted successfully!')
       fetchGroups() // Refresh the list
     } catch (error) {
@@ -222,7 +222,7 @@ const fetchGroups = async () => {
       toast.error('Event ID not found')
       return
     }
-    const response = await axios.get(`/events/${eventId}/group-scans`)
+    const response = await axios.get(`/scanner/events/${eventId}/group-scans`)
     groups.value = response.data as Group[]
   } catch (error) {
     console.error('Error fetching groups:', error)
@@ -243,7 +243,7 @@ const handleSubmit = async (formData: { groups: string[], status: string }) => {
       groups: formData.groups,
       status: formData.status
     }
-    await axios.post(`/events/${eventId}/group-scans`, payload)
+    await axios.post(`/admin/events/${eventId}/group-scans`, payload)
     toast.success('Group Event added successfully')
     fetchGroups() // Refresh the list
   } catch (error) {

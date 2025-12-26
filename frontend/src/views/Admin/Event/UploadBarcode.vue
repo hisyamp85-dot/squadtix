@@ -1,16 +1,8 @@
 <template>
-  <AdminLayout>
+  <component :is="layoutComponent">
     <PageBreadcrumb
       :pageTitle="'Upload Barcode'"
-      :breadcrumbs="[
-        { text: 'Home', to: '/' },
-        { text: 'Event', to: '/event' },
-        {
-          text: 'Event Detail',
-          to: `/event/detail/${eventId}?event_category_id=${eventCategoryId}`
-        },
-        { text: 'Upload Barcode', active: true }
-      ]"
+      :breadcrumbs="breadcrumbs"
     />
     <div
       class="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-7
@@ -71,7 +63,7 @@
                 type="text"
                 class="px-3 py-2 border border-gray-300 rounded-md
                        dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                placeholder="Search by barcode or name"
+                placeholder="Search by transaction id, barcode, or name"
               />
             </div>
 
@@ -126,6 +118,7 @@
                     />
                   </th>
                   <th class="px-5 py-3 text-left text-gray-900 dark:text-white">No</th>
+                  <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Transaction ID</th>
                   <th class="px-5 py-3 text-left text-gray-900 dark:text-white">QR Code</th>
                   <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Name</th>
                   <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Other Data</th>
@@ -140,7 +133,7 @@
                   class="bg-gray-50 dark:bg-gray-800/50"
                 >
                   <td
-                    colspan="8"
+                    colspan="9"
                     class="px-5 py-6 text-center text-gray-500 dark:text-gray-300"
                   >
                     No barcodes found.
@@ -166,6 +159,9 @@
                   </td>
                   <td class="px-5 py-6 text-gray-900 dark:text-white">
                     {{ (currentPage - 1) * numericEntriesPerPage + index + 1 }}
+                  </td>
+                  <td class="px-5 py-6 text-gray-900 dark:text-white">
+                    {{ barcode.id_transaction || '-' }}
                   </td>
                   <td class="px-5 py-6 text-gray-900 dark:text-white">
                     {{ barcode.qrcode }}
@@ -280,12 +276,13 @@
       @close="showAddBarcodeModal = false"
       @submit="handleAddBarcodeSubmit"
     />
-  </AdminLayout>
+  </component>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import UserLayout from '@/layouts/UserLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import Button from '@/components/ui/Button.vue'
 import UploadIcon from '@/icons/UploadIcon.vue'
@@ -303,6 +300,7 @@ type BarcodeStatus = 'Pending' | 'Redeemed' | 'Expired'
 
 interface Barcode {
   id: number
+  id_transaction: string | null
   qrcode: string
   name: string
   other_data: string | null
@@ -326,8 +324,27 @@ const showAddBarcodeModal = ref(false)
 const router = useRouter()
 const route = useRoute()
 
+const isUserRoute = computed(() => route.path.startsWith('/user/'))
+const layoutComponent = computed(() => (isUserRoute.value ? UserLayout : AdminLayout))
+const eventsApiBase = computed(() => (isUserRoute.value ? '/user/events' : '/admin/events'))
+
 const eventId = computed(() => (route.query.eventId as string) || '1')
 const eventCategoryId = computed(() => (route.query.event_category_id as string) || '')
+
+const breadcrumbs = computed(() => {
+  const id = eventId.value
+  const categoryId = eventCategoryId.value
+  const eventDetailPath = isUserRoute.value
+    ? `/user/event/detail/${id}?event_category_id=${categoryId}`
+    : `/admin/event/detail/${id}?event_category_id=${categoryId}`
+
+  return [
+    { text: 'Home', to: '/' },
+    { text: 'Event', to: isUserRoute.value ? '/event' : '/admin/event' },
+    { text: 'Event Detail', to: eventDetailPath },
+    { text: 'Upload Barcode', active: true },
+  ]
+})
 
 // Pastikan entriesPerPage selalu berupa number
 const numericEntriesPerPage = computed(() => {
@@ -339,9 +356,12 @@ function goBack() {
   const id = eventId.value
   const categoryId = eventCategoryId.value
   if (id) {
-    router.push(`/event/detail/${id}?event_category_id=${categoryId}`)
+    const detailPath = isUserRoute.value
+      ? `/user/event/detail/${id}?event_category_id=${categoryId}`
+      : `/admin/event/detail/${id}?event_category_id=${categoryId}`
+    router.push(detailPath)
   } else {
-    router.push('/event')
+    router.push(isUserRoute.value ? '/event' : '/admin/event')
   }
 }
 
@@ -350,6 +370,7 @@ const filteredBarcodes = computed(() => {
     const query = searchQuery.value.trim().toLowerCase()
     const matchesSearch =
       !query ||
+      (barcode.id_transaction || '').toLowerCase().includes(query) ||
       barcode.qrcode.toLowerCase().includes(query) ||
       barcode.name.toLowerCase().includes(query)
     const matchesStatus = !statusFilter.value || barcode.status === statusFilter.value
@@ -477,7 +498,7 @@ async function handleAddBarcodeSubmit() {
 async function fetchBarcodes() {
   try {
     const response = await api.get(
-      `/events/${eventId.value}/categories/${eventCategoryId.value}/qrcodes`
+      `${eventsApiBase.value}/${eventId.value}/categories/${eventCategoryId.value}/qrcodes`
     )
     console.log('Fetched barcodes:', response.data)
     barcodes.value = response.data as Barcode[]
@@ -523,7 +544,7 @@ async function confirmDelete() {
     const ids = selectedBarcodes.value.map(id => parseInt(id, 10))
     const response = (await api({
       method: 'DELETE',
-      url: `/events/${eventId.value}/categories/${eventCategoryId.value}/qrcodes`,
+      url: `${eventsApiBase.value}/${eventId.value}/categories/${eventCategoryId.value}/qrcodes`,
       data: { ids }
     })) as unknown as { data: { message: string } }
 

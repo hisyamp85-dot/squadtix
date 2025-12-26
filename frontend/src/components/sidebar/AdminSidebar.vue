@@ -277,12 +277,12 @@
           <ul class="mt-2 space-y-1 ml-9">
             <li>
               <router-link
-                to="/user"
+                to="/admin/user"
                 :class="[
                   'menu-dropdown-item',
                   {
-                    'menu-dropdown-item-active': isActive('/user'),
-                    'menu-dropdown-item-inactive': !isActive('/user'),
+                    'menu-dropdown-item-active': isActive('/admin/user'),
+                    'menu-dropdown-item-inactive': !isActive('/admin/user'),
                   },
                 ]"
               >
@@ -311,6 +311,17 @@ import {
 import SidebarWidget from '../layout/SidebarWidget.vue'
 import { useSidebar } from '@/composables/useSidebar'
 import type { Component } from 'vue'
+import { watch } from 'vue'
+
+watch(
+  () => route.path,
+  (path) => {
+    if (path.startsWith('/admin/user')) {
+      isSubmenuOpenUserManagement.value = true
+    }
+  },
+  { immediate: true }
+)
 
 const route = useRoute()
 const { isExpanded, isMobileOpen, isHovered, openSubmenu } = useSidebar()
@@ -382,7 +393,7 @@ const adminMenuGroups: { title: string; items: MenuItem[] }[] = [
       {
         name: 'Events',
         icon: CalendarDays,
-        subItems: [{ name: 'All Events', path: '/event', pro: false }],
+        subItems: [{ name: 'All Category', path: '/admin/event', pro: false }],
       },
     ],
   },
@@ -443,8 +454,8 @@ const userMenuGroups = computed<{ title: string; items: MenuItem[] }[]>(() => {
           icon: CalendarDays,
           subItems: [
             {
-              name: 'All Events',
-              path: '/event',
+              name: 'All Category',
+              path: '/admin/event',
               pro: false,
             },
           ],
@@ -460,12 +471,12 @@ const userMenuGroups = computed<{ title: string; items: MenuItem[] }[]>(() => {
           subItems: [
             {
               name: 'Check-in',
-              path: '/checkin',
+              path: '/admin/checkin',
               pro: false,
             },
             {
               name: 'Check-out',
-              path: '/checkout',
+              path: '/admin/checkout',
               pro: false,
             },
           ],
@@ -515,7 +526,11 @@ const groupMatches = (group: { title: string; items: MenuItem[] }) => {
 }
 
 // ACTIVE & SUBMENU
-const isActive = (path?: string) => path !== undefined && route.path === path
+const isActive = (path?: string) => {
+  if (!path) return false
+  return route.path === path || route.path.startsWith(path + '/')
+}
+
 
 const toggleSubmenu = (groupIndex: number, itemIndex: number) => {
   const key = `${groupIndex}-${itemIndex}`
@@ -556,7 +571,7 @@ const endTransition = (el: Element) => {
 </script>
 
 <style scoped>
-
+@reference "tailwindcss";
 
 .menu-item {
   @apply flex items-center gap-3 w-full

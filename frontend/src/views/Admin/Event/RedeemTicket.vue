@@ -2,8 +2,8 @@
   <AdminLayout>
     <PageBreadcrumb :pageTitle="'Redeem Ticket'" :breadcrumbs="[
       { text: 'Home', to: '/' },
-      { text: 'Event', to: '/event' },
-      { text: 'Event Detail', to: `/event/detail/${route.query.eventId || '1'}` },
+      { text: 'Event', to: '/admin/event' },
+      { text: 'Event Detail', to: `/admin/event/detail/${route.query.eventId || '1'}` },
       { text: 'Redeem Ticket', active: true }
     ]" />
 
@@ -159,6 +159,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div class="mt-4 space-y-1 text-left">
                         <p><span class="font-semibold">QR Code:</span> {{ ticketData.qrcode || '—' }}</p>
+                        <p><span class="font-semibold">Transaction ID:</span> {{ ticketData.id_transaction || '-' }}</p>
                         <p><span class="font-semibold">Nama:</span> {{ ticketData.holderName || '—' }}</p>
                         <p><span class="font-semibold">Other Data:</span> {{ ticketData.otherData || '—' }}</p>
                         <p><span class="font-semibold">Event:</span> {{ ticketData.eventName || '—' }}</p>
@@ -183,6 +184,7 @@
                     <thead>
                       <tr class="border-b">
                         <th class="px-5 py-3 text-left text-gray-900 dark:text-white">No</th>
+                        <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Transaction ID</th>
                         <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Barcode</th>
                         <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Name</th>
                         <th class="px-5 py-3 text-left text-gray-900 dark:text-white">Other Data</th>
@@ -195,6 +197,9 @@
                       <!-- Primary Ticket -->
                       <tr class="border-t bg-gray-50 dark:bg-gray-800/50">
                         <td class="px-5 py-6 text-gray-900 dark:text-white">1</td>
+                        <td class="px-5 py-6 text-gray-900 dark:text-white">
+                          {{ ticketData.id_transaction || '-' }}
+                        </td>
                         <td class="px-5 py-6 text-gray-900 dark:text-white">
                           {{ ticketData.qrcode }}
                         </td>
@@ -240,6 +245,9 @@
                       >
                         <td class="px-5 py-6 text-gray-900 dark:text-white">
                           {{ index + 2 }}
+                        </td>
+                        <td class="px-5 py-6 text-gray-900 dark:text-white">
+                          {{ relatedTicket.id_transaction || '-' }}
                         </td>
                         <td class="px-5 py-6 text-gray-900 dark:text-white">
                           {{ relatedTicket.qrcode }}
@@ -406,7 +414,10 @@ const scannedCode = ref('')
 const scanMethod = ref('')
 const manualCode = ref('')
 const ticketData = ref<TicketData | null>(null)
-const relatedTickets = ref<TicketData[]>([])
+const allTickets = ref<TicketData[]>([])
+const relatedTickets = computed(() =>
+  allTickets.value.filter((ticket) => ticket.id !== ticketData.value?.id),
+)
 const recentScans = ref<RecentScan[]>([])
 
 const router = useRouter()
@@ -420,7 +431,7 @@ const loadingEntryAmount = ref(false)
 // ========== Navigasi ==========
 const goBack = () => {
   if (eventId.value) {
-    router.push({ name: 'DetailEvent', params: { id: eventId.value } })
+    router.push({ name: 'AdminEventDetail', params: { id: eventId.value } })
   } else {
     router.push({ name: 'AdminEvent' })
   }
@@ -432,7 +443,7 @@ const fetchEntryAmounts = async () => {
   loadingEntryAmount.value = true
   try {
     const { data } = await api.get<{ categories: CategoryEntry[] }>(
-      `/events/${eventId.value}/categories`
+      `/admin/events/${eventId.value}/categories`
     )
 
     const categories = data.categories || []
@@ -608,6 +619,20 @@ const mapBarcodesResponse = (barcodes: BarcodeResponse[]): TicketData[] => {
   return barcodes.map(mapBarcodeResponse)
 }
 
+const syncDisplayedCode = (ticket: TicketData) => {
+  scannedCode.value = ticket.qrcode
+  scanMethod.value = 'Selected Ticket'
+}
+
+const updateAllTickets = (updated: TicketData) => {
+  const index = allTickets.value.findIndex((ticket) => ticket.id === updated.id)
+  if (index === -1) {
+    allTickets.value = [updated, ...allTickets.value]
+    return
+  }
+  allTickets.value.splice(index, 1, updated)
+}
+
 // ========== Entry Amount (BACKEND) & Redeem Counter (localStorage) ==========
 
 // entry_amount dari backend berdasarkan eventCategoryId
@@ -680,7 +705,7 @@ const validateTicket = async (code: string) => {
 
   isProcessing.value = true
   try {
-    const response = await api.post(`/events/${eventId.value}/qrcodes/validate`, { qrcode: code })
+    const response = await api.post(`/admin/events/${eventId.value}/qrcodes/validate`, { qrcode: code })
     const data = response.data as { barcodes: BarcodeResponse[] }
     const mappedBarcodes = mapBarcodesResponse(data.barcodes)
 
@@ -689,11 +714,8 @@ const validateTicket = async (code: string) => {
       throw new Error('Scanned barcode not found in response')
     }
 
-    ticketData.value = attachLimitMessage(mappedBarcodes[primaryIndex])
-
-    relatedTickets.value = mappedBarcodes
-      .filter((_, index) => index !== primaryIndex)
-      .map((t) => attachLimitMessage(t))
+    allTickets.value = mappedBarcodes.map((t) => attachLimitMessage(t))
+    ticketData.value = allTickets.value[primaryIndex]
 
     updateRecentScanStatus(code, ticketData.value.status)
 
@@ -724,7 +746,7 @@ const validateTicket = async (code: string) => {
       id_transaction: null,
       eventCategoryId: null,
     }
-    relatedTickets.value = []
+    allTickets.value = []
     updateRecentScanStatus(code, 'Invalid')
     toast.error(message)
   } finally {
@@ -753,7 +775,7 @@ const redeemTicket = async () => {
   isRedeeming.value = true
 
   try {
-    const response = await api.post(`/events/${eventId.value}/qrcodes/redeem`, {
+    const response = await api.post(`/admin/events/${eventId.value}/qrcodes/redeem`, {
       qrcode: ticketData.value.qrcode,
       redeemedBy: currentUser.value ? String(currentUser.value.username).trim() : 'Unknown',
     })
@@ -763,6 +785,7 @@ const redeemTicket = async () => {
     const newCount = used + 1
     setRedeemCount(mapped, newCount)
     ticketData.value = attachLimitMessage(mapped, newCount)
+    updateAllTickets(ticketData.value)
 
     updateRecentScanStatus(ticketData.value.qrcode, ticketData.value.status)
     toast.success(data.message || 'Ticket redeemed successfully!')
@@ -777,6 +800,7 @@ const redeemTicket = async () => {
       const mapped = mapBarcodeResponse(barcode)
       const usedNow = getRedeemCount(mapped)
       ticketData.value = attachLimitMessage(mapped, usedNow)
+      updateAllTickets(ticketData.value)
       updateRecentScanStatus(barcode.qrcode, ticketData.value.status)
     }
   } finally {
@@ -791,25 +815,25 @@ const redeemTicketById = async (ticketId: number) => {
     return
   }
 
-  const target = relatedTickets.value.find((t) => t.id === ticketId)
+  const target = allTickets.value.find((t) => t.id === ticketId)
   if (!target) return
+  syncDisplayedCode(target)
 
   const entryAmount = getEntryAmountForTicket(target)
   const used = getRedeemCount(target)
 
   if (entryAmount !== null && used >= entryAmount) {
     toast.error(`Entry limit reached (${entryAmount}x).`)
-    const idx = relatedTickets.value.findIndex((t) => t.id === ticketId)
-    if (idx !== -1) {
-      relatedTickets.value[idx] = attachLimitMessage(target, used)
-    }
+    const normalized = attachLimitMessage(target, used)
+    ticketData.value = normalized
+    updateAllTickets(normalized)
     return
   }
 
   isRedeeming.value = true
   try {
     if (used === 0) {
-      const response = await api.post(`/events/${eventId.value}/qrcodes/redeem`, {
+      const response = await api.post(`/admin/events/${eventId.value}/qrcodes/redeem`, {
         qrcode: target.qrcode,
         redeemedBy: currentUser.value ? String(currentUser.value.username).trim() : 'Unknown',
       })
@@ -820,10 +844,8 @@ const redeemTicketById = async (ticketId: number) => {
       setRedeemCount(mapped, newCount)
       const normalized = attachLimitMessage(mapped, newCount)
 
-      const index = relatedTickets.value.findIndex((t) => t.id === ticketId)
-      if (index !== -1) {
-        relatedTickets.value[index] = normalized
-      }
+      ticketData.value = normalized
+      updateAllTickets(normalized)
       toast.success(data.message || 'Ticket redeemed successfully!')
     } else {
       const nowIso = new Date().toISOString()
@@ -837,10 +859,8 @@ const redeemTicketById = async (ticketId: number) => {
       setRedeemCount(baseTicket, newCount)
       const normalized = attachLimitMessage(baseTicket, newCount)
 
-      const index = relatedTickets.value.findIndex((t) => t.id === ticketId)
-      if (index !== -1) {
-        relatedTickets.value[index] = normalized
-      }
+      ticketData.value = normalized
+      updateAllTickets(normalized)
 
       toast.success(
         entryAmount ? `Entry used ${newCount}/${entryAmount}` : `Entry used ${newCount} times`

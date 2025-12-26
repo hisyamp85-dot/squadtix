@@ -743,7 +743,7 @@ const selectEvent = (event: Event) => {
 
 const fetchEvents = async () => {
   try {
-    const response = await api.get('/events')
+    const response = await api.get('/admin/events')
     events.value = response.data as Event[]
   } catch (error) {
     console.error('Failed to fetch events:', error)
@@ -755,10 +755,10 @@ const fetchDashboardData = async () => {
 
   try {
     const [ticketsRes, redeemedRes, categoriesRes, logsRes] = await Promise.all([
-      api.get(`/events/${selectedEventId.value}/total-qrcodes`),
-      api.get(`/events/${selectedEventId.value}/total-redeemed`),
-      api.get(`/events/${selectedEventId.value}/categories`),
-      api.get('/checkin/logs', { params: { eventId: selectedEventId.value } }), // follow CheckinsController.logs
+      api.get(`/admin/events/${selectedEventId.value}/total-qrcodes`),
+      api.get(`/admin/events/${selectedEventId.value}/total-redeemed`),
+      api.get(`/admin/events/${selectedEventId.value}/categories`),
+      api.get('/scanner/checkin/logs', { params: { eventId: selectedEventId.value } }), // follow CheckinsController.logs
     ])
 
     // Summary dari endpoint existing
@@ -782,7 +782,7 @@ const fetchDashboardData = async () => {
     categoryStats.value = await Promise.all(
       categories.value.map(async (category) => {
         const statsRes = await api.get(
-          `/events/${selectedEventId.value}/categories/${category.id}/stats`,
+          `/admin/events/${selectedEventId.value}/categories/${category.id}/stats`,
         )
         const raw = statsRes.data as RawCategoryStats
 

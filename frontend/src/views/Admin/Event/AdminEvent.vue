@@ -199,7 +199,6 @@ import AddNewEventModal from "@/views/Admin/Event/AddNewEvent.vue";
 import DeatailMasterEvent from "@/views/Admin/Event/DeatailMasterEvent.vue";
 import ProfileCard from "@/components/common/ProfileCard.vue"; // hapus kalau tidak ada
 import api from "@/lib/axios";
-import { defineEmits } from "vue";
 import { toast } from "vue3-toastify";
 
 function isAxiosError(error: unknown): error is { response?: { data?: unknown }; message: string } {
@@ -217,7 +216,7 @@ const breadcrumbs = [
 
 const showAddForm = ref(false);
 
-interface EventForm extends HistoryState {
+interface EventForm {
   id_event?: string;
   name?: string;
   categories: string[];
@@ -289,7 +288,7 @@ const viewEvent = (event: EventForm) => {
 };
 
 const viewEventDetail = async (event: EventForm) => {
-  router.push({ path: `/event/detail/${event.id_event}`, state: { event } });
+  router.push({ path: `/admin/event/detail/${event.id_event}`, state: { event: event as unknown as HistoryState } });
 };
 
 const prevPage = () => {
@@ -309,8 +308,8 @@ const goToPage = (page: number) => {
   currentPage.value = page;
 };
 
-const handleAddEvent = async (formData: any) => {
-  const eventData = formData as EventForm; // kalau mau tetap pakai EventForm di dalam
+const handleAddEvent = async (formData: EventForm) => {
+  const eventData = formData;
 
   try {
     const payload = {
@@ -320,7 +319,7 @@ const handleAddEvent = async (formData: any) => {
       id_user: eventData.id_user,
     };
 
-    await api.post("/events", payload);
+    await api.post("/admin/events", payload);
     await fetchEvents();
     emit("event-added", eventData);
     showAddForm.value = false;
@@ -345,7 +344,7 @@ const handleAddEvent = async (formData: any) => {
 const handleSaveEvent = async (eventName: string, status: string) => {
   if (!selectedEvent.value?.id_event) return;
   try {
-    await api.put(`/events/${selectedEvent.value.id_event}`, { name: eventName, status });
+    await api.put(`/admin/events/${selectedEvent.value.id_event}`, { name: eventName, status });
     await fetchEvents();
     showDetailModal.value = false;
     toast.success("Event updated successfully!");
@@ -368,7 +367,7 @@ const handleSaveEvent = async (eventName: string, status: string) => {
 const handleDeleteEvent = async () => {
   if (!selectedEvent.value?.id_event) return;
   try {
-    await api.delete(`/events/${selectedEvent.value.id_event}`);
+    await api.delete(`/admin/events/${selectedEvent.value.id_event}`);
     await fetchEvents();
     showDetailModal.value = false;
     toast.success("Event deleted successfully!");
@@ -390,7 +389,7 @@ const handleDeleteEvent = async () => {
 
 const fetchEvents = async () => {
   try {
-    const response = await api.get("/events");
+    const response = await api.get("/admin/events");
     const data = response.data as Array<{
       event_id: string;
       event_name: string;

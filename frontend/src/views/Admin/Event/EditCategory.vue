@@ -40,7 +40,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { useSidebar } from '@/composables/useSidebar'
 import api from '@/lib/axios'
 import { toast } from 'vue3-toastify'
@@ -69,6 +70,10 @@ const emit = defineEmits<{
 }>()
 
 const { isExpanded, isHovered } = useSidebar()
+const route = useRoute()
+const eventsApiBase = computed(() =>
+  route.path.startsWith('/user/') ? '/user/events' : '/admin/events'
+)
 
 const categoryName = ref('')
 
@@ -84,8 +89,13 @@ const handleSubmit = async () => {
     return
   }
   try {
-    await api.put(`/events/${props.eventId}/categories/${props.id}`, { categoryName: categoryName.value })
+    // use nested admin events category route
+    await api.put(
+      `${eventsApiBase.value}/${props.eventId}/categories/${props.id}`,
+      { categoryName: categoryName.value },
+    )
     toast.success('Category updated successfully!')
+    emit('save', categoryName.value)
     emit('close')
   } catch (error: unknown) {
     const err = error as ApiError

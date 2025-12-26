@@ -4,8 +4,8 @@
       :pageTitle="currentPageTitle"
       :breadcrumbs="[
         { text: 'Home', to: '/' },
-        { text: 'Event', to: '/event' },
-        { text: 'Event Detail', to: `/event/detail/${route.query.eventId || '1'}` },
+        { text: 'Event', to: '/admin/event' },
+        { text: 'Event Detail', to: `/admin/event/detail/${route.query.eventId || '1'}` },
         { text: 'Add Category Group Event', active: true }
       ]"
     />
@@ -328,9 +328,9 @@ const goToPage = (page: number) => {
 const goBack = () => {
   const eventId = route.query.eventId as string
   if (eventId) {
-    router.push(`/event/detail/${eventId}`)
+    router.push({ name: 'AdminEventDetail', params: { id: eventId } })
   } else {
-    router.push('/event')
+    router.push('/admin/event')
   }
 }
 
@@ -341,7 +341,7 @@ const fetchGroups = async () => {
       toast.error('Event ID not found')
       return
     }
-    const response = await axios.get(`/events/${eventId}/group-scans`)
+    const response = await axios.get(`/scanner/events/${eventId}/group-scans`)
     groups.value = response.data as Group[]
   } catch (error) {
     console.error('Error fetching groups:', error)
@@ -356,7 +356,7 @@ const fetchCategories = async () => {
       toast.error('Event ID not found')
       return
     }
-    const response = await axios.get(`/events/${eventId}/categories`)
+    const response = await axios.get(`/admin/events/${eventId}/categories`)
     categories.value = (response.data as { categories: Category[] }).categories
 
     // pastikan currentPage valid
@@ -375,7 +375,7 @@ const fetchGroupCategories = async (groupId: string) => {
     if (!eventId || !groupId) return
 
     const response = await axios.get(
-      `/events/${eventId}/group-scans/${groupId}/group-categories`
+      `/scanner/events/${eventId}/group-scans/${groupId}/group-categories`
     )
     const groupCategories = response.data as { event_category_id: string }[]
     selectedCategories.value = groupCategories.map(gc => gc.event_category_id)
@@ -408,7 +408,7 @@ const handleCategoryChange = async (categoryId: string, event: Event) => {
     if (isChecked) {
       // Add category to group
       await axios.post(
-        `/events/${eventId}/group-scans/${selectedGroup.value}/group-categories`,
+        `/admin/events/${eventId}/group-scans/${selectedGroup.value}/group-categories`,
         {
           eventCategoryId: categoryId
         }
@@ -417,7 +417,7 @@ const handleCategoryChange = async (categoryId: string, event: Event) => {
     } else {
       // Remove category from group
       await axios.delete(
-        `/events/${eventId}/group-scans/${selectedGroup.value}/group-categories/${categoryId}`
+        `/admin/events/${eventId}/group-scans/${selectedGroup.value}/group-categories/${categoryId}`
       )
       toast.success('Category removed from group')
     }

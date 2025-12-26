@@ -435,7 +435,7 @@ const submitCheckOut = async (code: string) => {
   try {
     isProcessing.value = true
 
-    const response = await api.post('/checkin/scan', {
+    const response = await api.post('/scanner/checkin/scan', {
       qrcode: code,
       eventId: selectedEventId.value,
       eventCategoryId: selectedCategoryId.value,
@@ -487,7 +487,7 @@ const formatDateTime = (value: string | null | undefined) => {
 
 const fetchEvents = async () => {
   try {
-    const response = await api.get('/events')
+    const response = await api.get('/admin/events')
     const data = response.data as Array<{ event_id: string; event_name: string }>
     events.value = data
   } catch (error) {
@@ -519,7 +519,7 @@ const loadCheckedInList = async () => {
 
   try {
     isLoadingList.value = true
-    const response = await api.get('/checkin/checked-in-list', {
+    const response = await api.get('/scanner/checkin/checked-in-list', {
       params: {
         eventId: selectedEventId.value,
         eventCategoryId: selectedCategoryId.value,

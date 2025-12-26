@@ -26,7 +26,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import UserLayout from '@/components/layout/UserLayout.vue'
+import UserLayout from '@/layouts/UserLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import ProfileCard from '@/components/profile/ProfileCard.vue'
 import PersonalInfoCard from '@/components/profile/PersonalInfoCard.vue'

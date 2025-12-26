@@ -847,7 +847,7 @@ function normalizeCount(raw: any): number {
 // ================= FETCHERS =================
 const fetchEvents = async () => {
   try {
-    const response = await api.get('/events')
+    const response = await api.get('/admin/events')
     const list = normalizeArray<{
       event_id: string
       event_name: string
@@ -871,7 +871,7 @@ const fetchCategories = async (eventId: string) => {
       categories.value = []
       return
     }
-    const response = await api.get(`/events/${eventId}/categories`)
+    const response = await api.get(`/admin/events/${eventId}/categories`)
     // Bisa jadi: { categories: [...] } atau langsung [...]
     const raw = response.data
     let list: CategorySummary[] = []
@@ -897,7 +897,7 @@ const fetchCategories = async (eventId: string) => {
 const fetchLogs = async () => {
   try {
     isLoading.value = true
-    const response = await api.get('/checkin/logs', {
+    const response = await api.get('/scanner/checkin/logs', {
       params: {
         eventId: selectedEventId.value || undefined,
         eventCategoryId: selectedCategoryId.value || undefined,
@@ -930,7 +930,7 @@ const fetchLogs = async () => {
 
 const fetchUsers = async () => {
   try {
-    const response = await api.get('/users')
+    const response = await api.get('/admin/users')
     const list = normalizeArray<any>(response.data, 'users')
     users.value = list.map((u) => ({
       id: u.id,
@@ -946,7 +946,7 @@ const fetchUsers = async () => {
 
 const fetchUserCount = async () => {
   try {
-    const response = await api.get('/users/count')
+    const response = await api.get('/admin/users/count')
     userCount.value = normalizeCount(response.data)
   } catch (error) {
     console.error('Failed to fetch user count:', error)

@@ -249,7 +249,7 @@ const loadCurrentUser = async () => {
     const parsed = JSON.parse(stored) as User
     if (!parsed.id) return
 
-    const resp = await api.get(`/users/${parsed.id}`)
+    const resp = await api.get(`/admin/users/${parsed.id}`)
     const data = resp.data as User
     user.value = data
 
@@ -297,7 +297,7 @@ const saveProfile = async () => {
       payload.password = form.value.password
     }
 
-    const resp = await api.put(`/users/${user.value.id}`, payload)
+    const resp = await api.put(`/admin/users/${user.value.id}`, payload)
     const updated = resp.data as User
 
     user.value = updated

@@ -88,7 +88,7 @@ watch(() => props.show, async (newShow) => {
     GroupName.value = props.Group
     GroupStatus.value = props.status || 'Active'
     try {
-      const response = await api.get(`/events/${props.eventId}/group-scans/${props.id}`)
+      const response = await api.get(`/admin/events/${props.eventId}/group-scans/${props.id}`)
       const groupData = response.data as { name_group: string; status: string }
       GroupName.value = groupData.name_group
       GroupStatus.value = groupData.status
@@ -105,7 +105,7 @@ const handleSubmit = async () => {
     return
   }
   try {
-    await api.put(`/events/${props.eventId}/group-scans/${props.id}`, { name_group: GroupName.value, status: GroupStatus.value })
+    await api.put(`/admin/events/${props.eventId}/group-scans/${props.id}`, { name_group: GroupName.value, status: GroupStatus.value })
     toast.success('Group updated successfully!')
     emit('save', GroupName.value)
     emit('close')

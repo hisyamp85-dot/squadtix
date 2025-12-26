@@ -313,8 +313,8 @@ onMounted(async () => {
   if (userIdFromQuery) {
     userId.value = userIdFromQuery
     try {
-      console.log("👉 Fetching user from /users/" + userIdFromQuery)
-      const res = await api.get<User>('/users/' + userIdFromQuery)
+      console.log("👉 Fetching user from /admin/users/" + userIdFromQuery)
+      const res = await api.get<User>('/admin/users/' + userIdFromQuery)
       console.log("✅ Response dari user:", res.data)
       selectedUserHeader.value = res.data as User
       console.log("User loaded:", selectedUserHeader.value)
@@ -325,8 +325,8 @@ onMounted(async () => {
 
       // fallback hardcoded fetch
       try {
-        console.log("👉 Coba fallback fetch hardcoded http://127.0.0.1:3333/users/" + userIdFromQuery)
-        const res = await fetch("http://127.0.0.1:3333/users/" + userIdFromQuery)
+        console.log("👉 Coba fallback fetch hardcoded http://127.0.0.1:3333/admin/users/" + userIdFromQuery)
+        const res = await fetch("http://127.0.0.1:3333/admin/users/" + userIdFromQuery)
         const data = await res.json()
         console.log("✅ Response dari hardcode user fetch:", data)
         selectedUserHeader.value = data as User
@@ -391,7 +391,7 @@ onMounted(async () => {
 
   try {
     console.log("👉 Fetching users from /users...")
-    const res = await api.get<User[]>('/users')
+    const res = await api.get<User[]>('/admin/users')
     console.log("✅ Response dari users:", res.data)
     usersList.value = res.data
     console.log("UsersList loaded:", usersList.value)

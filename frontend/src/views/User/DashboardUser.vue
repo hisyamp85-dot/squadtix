@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout>
+  <UserLayout>
     <PageBreadcrumb :pageTitle="'My Dashboard'" :breadcrumbs="breadcrumbs" />
 
     <div class="w-full flex justify-center px-3 sm:px-4 lg:px-6">
@@ -398,7 +398,7 @@
         </div>
       </div> <!-- end inner -->
     </div>   <!-- end outer -->
-  </AdminLayout>
+  </UserLayout>
 </template>
 
 <script setup lang="ts">
@@ -409,7 +409,7 @@ import {
   ref,
 } from 'vue'
 import { useRouter } from 'vue-router'
-import AdminLayout from '@/components/layout/AdminLayout.vue'
+import UserLayout from '@/layouts/UserLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import api from '@/lib/axios'
 
@@ -475,43 +475,13 @@ const slideInterval = ref<number | null>(null)
 
 // ========== FETCH ==========
 const fetchEvents = async () => {
-  try {
-    const response = await api.get('/events')
-    const data = response.data as Array<{
-      event_id: string
-      event_name: string
-      status?: string
-    }>
-    events.value = data.map((e) => ({
-      event_id: e.event_id,
-      event_name: e.event_name,
-      status: e.status ?? null,
-    }))
-  } catch (error) {
-    console.error('Failed to fetch events:', error)
-  }
+  // Temporarily disabled: backend endpoint is not available.
+  return
 }
 
 const fetchLogs = async () => {
-  try {
-    isLoading.value = true
-
-    // Ambil SEMUA logs, filter milik user di frontend
-    const response = await api.get('/checkin/logs')
-    let rawLogs: CheckinLog[] = []
-
-    if (Array.isArray(response.data)) {
-      rawLogs = response.data as CheckinLog[]
-    } else if (response.data && Array.isArray((response.data as any).logs)) {
-      rawLogs = (response.data as any).logs as CheckinLog[]
-    }
-
-    logs.value = rawLogs
-  } catch (error) {
-    console.error('Failed to fetch logs:', error)
-  } finally {
-    isLoading.value = false
-  }
+  // Temporarily disabled: backend endpoint is not available.
+  return
 }
 
 // ========== LIFECYCLE ==========

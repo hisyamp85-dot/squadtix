@@ -469,7 +469,7 @@ const submitCode = async (code: string) => {
 
     // ❌ tidak kirim entryAmount lagi, backend ambil dari EntryAmountStore JSON
 
-    const response = await api.post('/checkin/scan', payload)
+    const response = await api.post('/scanner/checkin/scan', payload)
 
     const data = response.data as {
       message: string
@@ -538,7 +538,7 @@ const formatDateTime = (value: string | null) => {
 
 const fetchEvents = async () => {
   try {
-    const response = await api.get('/events')
+    const response = await api.get('/admin/events')
     const data = response.data as Array<{ event_id: string; event_name: string }>
     events.value = data
   } catch (error) {

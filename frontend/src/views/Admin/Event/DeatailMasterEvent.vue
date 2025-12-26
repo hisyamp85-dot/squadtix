@@ -135,8 +135,7 @@ const handleSubmit = async () => {
     return
   }
   try {
-    await api.put(`/events/${props.eventId}`, { name: eventName.value, status: localEvent.value.status })
-    toast.success('Event updated successfully!')
+    await api.put(`/admin/events/${props.eventId}`, { name: eventName.value, status: localEvent.value.status })
     emit('save', eventName.value, localEvent.value.status)
     emit('close')
   } catch (error: unknown) {

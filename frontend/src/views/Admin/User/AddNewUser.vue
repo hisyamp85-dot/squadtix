@@ -114,8 +114,9 @@
           <button
             type="submit"
             class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            :disabled="isSubmitting"
           >
-            Save
+            {{ isSubmitting ? 'Saving...' : 'Save' }}
           </button>
         </div>
       </form>
@@ -170,16 +171,9 @@ watch(() => props.show, async (newShow) => {
     formData.value = { ...props.initialForm }
     formData.value.role = '' // Show "Select Role" placeholder
     formData.value.status = '' // Show "Select Status" placeholder
-    selectedEventName.value = ''
-    isDropdownOpen.value = false
-    searchQuery.value = ''
-    try {
-      const rolesRes = await api.get<string[]>('/users/roles')
-      console.log('Refetched roles on modal open:', rolesRes.data)
-      roles.value = rolesRes.data as string[]
-    } catch (err) {
-      console.error('Failed to refetch roles:', err)
-    }
+    // pakai daftar statis saja; endpoint roles belum tersedia
+    usernameError.value = ''
+    emailError.value = ''
   }
 })
 
@@ -189,48 +183,15 @@ const togglePasswordVisibility = () => {
   showPassword.value = !showPassword.value
 }
 
-const roles = ref<string[]>(['Admin', 'User','Scanner'])
+const roles = ref<string[]>(['Admin', 'User', 'Scanner'])
 const statuses = ref<string[]>(['Active', 'Inactive'])
 
-const searchQuery = ref('')
-const isDropdownOpen = ref(false)
-const selectedEventName = ref('')
 const usernameError = ref('')
 const emailError = ref('')
-
-
-
-onMounted(async () => {
-  try {
-    const rolesRes = await api.get<string[]>('/users/roles')
-    console.log('Fetched roles:', rolesRes.data)  // Debug log
-    roles.value = rolesRes.data as string[]
-  } catch (err) {
-    console.error(err)
-  }
-})
-
-const checkUsername = async () => {
-  if (!formData.value.username) return
-  try {
-    const res = await api.get<{ exists: boolean }>(`/users/check-username?username=${formData.value.username}`)
-    usernameError.value = (res.data as { exists: boolean }).exists ? 'Username already exists' : ''
-  } catch (err) {
-    console.error('Error checking username:', err)
-    usernameError.value = 'Unable to check username availability'
-  }
-}
-
-const checkEmail = async () => {
-  if (!formData.value.email) return
-  try {
-    const res = await api.get<{ exists: boolean }>(`/users/check-email?email=${formData.value.email}`)
-    emailError.value = (res.data as { exists: boolean }).exists ? 'Email already exists' : ''
-  } catch (err) {
-    console.error('Error checking email:', err)
-    emailError.value = 'Unable to check email availability'
-  }
-}
+const isSubmitting = ref(false)
+// Skip API validation endpoints yang belum ada di backend
+const checkUsername = async () => {}
+const checkEmail = async () => {}
 
 const handleSubmit = async () => {
   if (usernameError.value || emailError.value) return
@@ -242,7 +203,8 @@ const handleSubmit = async () => {
   }
 
   try {
-    const response = await api.post<UserForm & { id: number }>('/users', formData.value)
+    isSubmitting.value = true
+    const response = await api.post<UserForm & { id: number }>('/admin/users', formData.value)
     toast.success('User created successfully!')
     emit('user-added', response.data)
     emit('close')
@@ -250,6 +212,8 @@ const handleSubmit = async () => {
     const err = error as ApiError
     const message = err.response?.data?.message || err.message || 'Unknown error'
     toast.error('Failed to create user: ' + message)
+  } finally {
+    isSubmitting.value = false
   }
 }
 </script>

@@ -9,6 +9,15 @@
 
       <form @submit.prevent="handleSubmit">
         <div class="mb-3">
+          <label class="block text-sm font-medium">Transaction ID</label>
+          <input
+            v-model="formData.id_transaction"
+            type="text"
+            class="w-full border rounded p-2"
+          />
+        </div>
+
+        <div class="mb-3">
           <label class="block text-sm font-medium">Barcode</label>
           <input
             v-model="formData.qrcode"
@@ -58,13 +67,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { useSidebar } from '@/composables/useSidebar'
 import { toast } from 'vue3-toastify'
 import api from '@/lib/axios'
 interface BarcodeForm {
   qrcode: string
   name: string
+  id_transaction: string | null
   other_data: string | null
 }
 
@@ -82,16 +93,24 @@ const emit = defineEmits<{
 }>()
 
 const { isExpanded, isHovered } = useSidebar()
+const route = useRoute()
+const eventsApiBase = computed(() =>
+  route.path.startsWith('/user/') ? '/user/events' : '/admin/events'
+)
 
 const formData = ref<BarcodeForm>({
   qrcode: '',
   name: '',
+  id_transaction: null,
   other_data: null,
 })
 
 async function handleSubmit() {
   try {
-    const response = await api.post(`/events/${props.eventId}/categories/${props.eventCategoryId}/qrcodes`, formData.value)
+    const response = await api.post(
+      `${eventsApiBase.value}/${props.eventId}/categories/${props.eventCategoryId}/qrcodes`,
+      formData.value
+    )
     toast.success((response.data as unknown as { message: string }).message || 'Barcode added successfully')
     emit('submit', formData.value)
     emit('close')

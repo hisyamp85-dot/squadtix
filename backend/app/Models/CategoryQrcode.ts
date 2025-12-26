@@ -25,6 +25,9 @@ export default class CategoryQrcode extends BaseModel {
   @column()
   public other_data: string | null
 
+  @column()
+  public id_transaction: string | null
+
   @column.dateTime({ autoCreate: true })
   public created_at: DateTime
 

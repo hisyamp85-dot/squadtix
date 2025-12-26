@@ -235,7 +235,7 @@ function deleteUser() {
 async function confirmDelete() {
   if (localUser.value) {
     try {
-      await api.delete(`/users/${localUser.value.id}`)
+      await api.delete(`/admin/users/${localUser.value.id}`)
       toast.success('User deleted successfully!')
       emit('delete', localUser.value.id)
       emit('close')
@@ -256,7 +256,7 @@ async function saveChanges() {
     try {
       // Add updated_at with current date-time
       localUser.value.updated_at = new Date().toISOString()
-      await api.put(`/users/${localUser.value.id}`, localUser.value)
+      await api.put(`/admin/users/${localUser.value.id}`, localUser.value)
       toast.success('User updated successfully!')
       emit('save', localUser.value)
       emit('close')

@@ -1,9 +1,12 @@
 import axios from 'axios'
 import router from '@/router'
 
-const baseURL =
-  (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/+$/, '') ||
-  window.location.origin
+const normalizeBaseUrl = (raw?: string | null) => {
+  const cleaned = (raw ?? window.location.origin).replace(/\/+$/, '')
+  return cleaned.endsWith('/api') ? cleaned : `${cleaned}/api`
+}
+
+const baseURL = normalizeBaseUrl(import.meta.env.VITE_API_URL as string | undefined)
 
 const api = axios.create({
   baseURL,
@@ -14,7 +17,9 @@ const api = axios.create({
   timeout: 30000,
 })
 
-// Bersihkan sesi lokal dan arahkan ke login
+// =======================
+// FORCE LOGOUT
+// =======================
 const forceLogout = () => {
   localStorage.removeItem('token')
   localStorage.removeItem('auth_token')
@@ -27,10 +32,16 @@ const forceLogout = () => {
   }
 }
 
-// Inject token ke header
+// =======================
+// REQUEST INTERCEPTOR
+// =======================
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token') ?? localStorage.getItem('auth_token')
-  const scheme = (localStorage.getItem('token_type') || 'Bearer').trim() || 'Bearer'
+  const token =
+    localStorage.getItem('token') ??
+    localStorage.getItem('auth_token')
+
+  const scheme =
+    (localStorage.getItem('token_type') || 'Bearer').trim() || 'Bearer'
 
   if (token) {
     config.headers = {
@@ -42,14 +53,18 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// Auto-logout bila token invalid/expired
+// =======================
+// RESPONSE INTERCEPTOR
+// =======================
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error?.response?.status
+
     if (status === 401 || status === 419) {
       forceLogout()
     }
+
     return Promise.reject(error)
   },
 )
